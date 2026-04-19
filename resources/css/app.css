@@ -1,0 +1,70 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --font-tsl-headline: 'Newsreader', Georgia, 'Times New Roman', serif;
+    --font-tsl-body: 'Work Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --color-cream: #f9f7f2;
+    --color-cream-dark: #f0ebe3;
+    --color-forest: #1e3a32;
+    --color-forest-light: #2a4d42;
+    --color-forest-muted: #3d6b5c;
+
+    /* Directory (Stitch) palette */
+    --color-tsl-surface: #fcf9f4;
+    --color-tsl-primary: #173124;
+    --color-tsl-secondary: #50606f;
+    --color-tsl-tertiary: #452403;
+    --color-tsl-on-primary: #ffffff;
+    --color-tsl-primary-container: #2d4739;
+    --color-tsl-on-primary-container: #98b5a3;
+    --color-tsl-surface-container: #f0ede9;
+    --color-tsl-surface-container-low: #f6f3ee;
+    --color-tsl-surface-container-high: #ebe8e3;
+    --color-tsl-surface-container-highest: #e5e2dd;
+    --color-tsl-surface-container-lowest: #ffffff;
+    --color-tsl-outline: #727973;
+    --color-tsl-outline-variant: #c2c8c2;
+    --color-tsl-on-surface: #1c1c19;
+}
+
+@layer base {
+    :root {
+        color-scheme: light;
+    }
+}
+
+@layer components {
+    .site-header.is-scrolled {
+        box-shadow: 0 6px 28px -10px rgba(28, 28, 25, 0.12);
+    }
+
+    /* Leaflet fills the directory map panel (needs explicit height for tiles) */
+    .directory-map-root .leaflet-container {
+        z-index: 0;
+        height: 100%;
+        min-height: min(70vh, 560px);
+        border-radius: 0.75rem;
+    }
+
+    .leather-underline {
+        position: relative;
+    }
+    .leather-underline::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #f4bb8e;
+    }
+}

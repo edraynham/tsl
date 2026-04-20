@@ -111,6 +111,23 @@
                         @enderror
                     </div>
                     <div>
+                        <label for="instructor-contact-skill-level" class="block text-sm font-medium text-stone-700">Skill level</label>
+                        <select
+                            name="skill_level"
+                            id="instructor-contact-skill-level"
+                            required
+                            class="mt-1 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
+                        >
+                            <option value="" disabled @selected(old('skill_level') === null || old('skill_level') === '')>Select skill level</option>
+                            <option value="beginner" @selected(old('skill_level') === 'beginner')>Beginner</option>
+                            <option value="intermediate" @selected(old('skill_level') === 'intermediate')>Intermediate</option>
+                            <option value="advanced" @selected(old('skill_level') === 'advanced')>Advanced</option>
+                        </select>
+                        @error('skill_level')
+                            <p class="mt-1 text-sm text-red-700">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
                         <label for="instructor-contact-message" class="block text-sm font-medium text-stone-700">Message</label>
                         <textarea
                             name="message"

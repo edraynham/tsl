@@ -11,6 +11,12 @@
 
         @include('account._tabs', ['active' => 'instructor'])
 
+        @if (session('status'))
+            <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900" role="status">
+                {{ session('status') }}
+            </div>
+        @endif
+
         @if ($instructor === null)
             <div class="rounded-2xl border border-dashed border-stone-300 bg-white/60 px-6 py-12 text-center">
                 <p class="text-stone-700">You don’t have a public instructor profile linked to this account yet.</p>
@@ -34,7 +40,13 @@
                         @if ($instructor->locationLabel() !== '')
                             <p class="mt-3 text-sm text-stone-500">{{ $instructor->locationLabel() }}</p>
                         @endif
-                        <p class="mt-6">
+                        <p class="mt-6 flex flex-wrap gap-3">
+                            <a
+                                href="{{ route('account.instructor.edit') }}"
+                                class="inline-flex items-center justify-center rounded-xl bg-forest px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-forest-light"
+                            >
+                                Edit profile
+                            </a>
                             <a
                                 href="{{ route('instructors.show', $instructor) }}"
                                 class="inline-flex items-center justify-center rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-forest shadow-sm transition hover:bg-stone-50"

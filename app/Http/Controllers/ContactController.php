@@ -26,6 +26,11 @@ class ContactController extends Controller
             'subject' => ['nullable', 'string', 'max:180', Rule::requiredIf(fn () => ! $request->filled('instructor_slug'))],
             'message' => ['required', 'string', 'max:10000'],
             'instructor_slug' => ['nullable', 'string', Rule::exists('instructors', 'slug')],
+            'skill_level' => [
+                'nullable',
+                Rule::requiredIf(fn () => $request->filled('instructor_slug')),
+                Rule::in(['beginner', 'intermediate', 'advanced']),
+            ],
         ]);
 
         $to = config('mail.contact.address');
@@ -39,6 +44,12 @@ class ContactController extends Controller
         $bodyText = $validated['message'];
         $instructor = null;
 
+        $skillLevelLabels = [
+            'beginner' => __('Beginner'),
+            'intermediate' => __('Intermediate'),
+            'advanced' => __('Advanced'),
+        ];
+
         if (! empty($validated['instructor_slug'])) {
             $instructor = Instructor::query()->where('slug', $validated['instructor_slug'])->first();
             if ($instructor !== null) {
@@ -46,6 +57,10 @@ class ContactController extends Controller
                     $subjectLine = __('Enquiry');
                 }
                 $subjectLine = '[Instructor: '.$instructor->name.'] '.$subjectLine;
+                $skill = $validated['skill_level'] ?? null;
+                if ($skill !== null && isset($skillLevelLabels[$skill])) {
+                    $bodyText = __('Skill level').': '.$skillLevelLabels[$skill]."\n\n".$bodyText;
+                }
                 $bodyText .= "\n\n---\n".__('This enquiry was sent from the instructor profile:')."\n".route('instructors.show', $instructor);
             }
         }

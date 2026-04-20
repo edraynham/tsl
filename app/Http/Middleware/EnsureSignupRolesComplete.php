@@ -28,6 +28,8 @@ class EnsureSignupRolesComplete
         if ($request->routeIs([
             'account',
             'account.instructor',
+            'account.instructor.edit',
+            'account.instructor.update',
             'register.roles',
             'register.roles.store',
             'logout',

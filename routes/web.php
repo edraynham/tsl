@@ -66,7 +66,9 @@ Route::get('/account', function () {
 })->name('account');
 
 Route::middleware('auth')->group(function (): void {
-    Route::get('/account/instructor', InstructorProfileController::class)->name('account.instructor');
+    Route::get('/account/instructor', [InstructorProfileController::class, 'show'])->name('account.instructor');
+    Route::get('/account/instructor/edit', [InstructorProfileController::class, 'edit'])->name('account.instructor.edit');
+    Route::put('/account/instructor', [InstructorProfileController::class, 'update'])->name('account.instructor.update');
 });
 
 Route::middleware('guest')->group(function (): void {

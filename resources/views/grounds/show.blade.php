@@ -2,33 +2,49 @@
 
 @section('title', $ground->name.' — '.config('app.name'))
 
+@push('head')
+    <link href="https://fonts.bunny.net/css?family=newsreader:400,500,600,700|work-sans:300,400,500,600,700&display=swap" rel="stylesheet">
+@endpush
+
 @section('content')
-    <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <nav class="mb-8 text-sm">
-            <a href="{{ route('grounds.index') }}" class="font-medium text-forest hover:text-forest-light">← All grounds</a>
-        </nav>
+    <div class="relative overflow-hidden bg-tsl-surface font-tsl-body text-tsl-on-surface">
+        <div class="pointer-events-none absolute -left-32 top-20 h-96 w-96 rounded-full bg-tsl-primary/[0.04] blur-3xl" aria-hidden="true"></div>
+        <div class="pointer-events-none absolute -right-24 bottom-40 h-80 w-80 rounded-full bg-tsl-tertiary/[0.06] blur-3xl" aria-hidden="true"></div>
 
-        <article>
-            <div class="mb-8 overflow-hidden rounded-2xl bg-stone-100 ring-1 ring-stone-200/80">
-                <div class="aspect-[21/9] max-h-[320px] sm:aspect-[2/1]">
-                    <img
-                        src="{{ $ground->coverPhotoUrl() }}"
-                        alt="{{ $ground->name }}"
-                        class="size-full object-cover"
-                        fetchpriority="high"
-                    >
+        <div class="relative mx-auto max-w-3xl px-4 py-10 sm:px-8 sm:py-12 lg:max-w-4xl">
+            <nav class="mb-10 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" aria-label="Breadcrumb">
+                <a href="{{ route('grounds.index') }}" class="font-semibold text-tsl-primary underline decoration-tsl-outline-variant underline-offset-4 transition hover:text-tsl-tertiary">← Directory</a>
+                <span class="text-tsl-outline" aria-hidden="true">·</span>
+                <span class="text-tsl-secondary">{{ $ground->county ?: 'United Kingdom' }}</span>
+            </nav>
+
+            <article>
+                <div class="mb-8 overflow-hidden rounded-2xl bg-tsl-surface-container ring-1 ring-tsl-outline-variant/40">
+                    <div class="aspect-[21/9] max-h-[320px] sm:aspect-[2/1]">
+                        <img
+                            src="{{ $ground->coverPhotoUrl() }}"
+                            alt="{{ $ground->name }}"
+                            class="size-full object-cover"
+                            fetchpriority="high"
+                        >
+                    </div>
                 </div>
-            </div>
 
-            <h1 class="font-serif text-3xl font-semibold tracking-tight text-forest">{{ $ground->name }}</h1>
+                <header class="mb-6">
+                    <div class="mb-3 flex items-center gap-2">
+                        <span class="size-1.5 shrink-0 rounded-full bg-tsl-tertiary" aria-hidden="true"></span>
+                        <p class="text-[11px] font-bold tracking-[0.15em] text-tsl-secondary uppercase">Shooting ground</p>
+                    </div>
+                    <h1 class="font-tsl-headline text-4xl font-bold tracking-tight text-tsl-primary md:text-5xl">{{ $ground->name }}</h1>
+                </header>
 
             @if ($ground->full_address || $ground->postcode)
-                <p class="mt-4 text-stone-700">
+                <p class="mt-2 text-lg leading-relaxed text-tsl-secondary">
                     @if ($ground->full_address)
                         {{ $ground->full_address }}
                     @endif
                     @if ($ground->postcode && $ground->full_address && ! str_contains($ground->full_address, $ground->postcode))
-                        <br><span class="text-stone-500">{{ $ground->postcode }}</span>
+                        <br><span class="text-tsl-outline">{{ $ground->postcode }}</span>
                     @elseif ($ground->postcode)
                         {{ $ground->postcode }}
                     @endif
@@ -36,11 +52,11 @@
             @endif
 
             @if ($ground->hasStructuredWeeklyHours() || $ground->opening_hours)
-                <div class="mt-6 rounded-xl border border-stone-200/90 bg-cream-dark/40 px-5 py-4">
-                    <h2 class="text-sm font-semibold text-forest">Opening hours</h2>
+                <div class="mt-8 rounded-xl border border-tsl-outline-variant/40 bg-tsl-surface-container-low px-5 py-5 shadow-sm">
+                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Opening hours</h2>
                     @if ($ground->hasStructuredWeeklyHours())
                         @php $oh = $ground->openingHours; @endphp
-                        <dl class="mt-3 space-y-2 text-sm text-stone-700">
+                        <dl class="mt-4 space-y-2 text-sm text-tsl-on-surface">
                             @foreach (\App\Models\OpeningHours::WEEKDAY_LABELS as $iso => $label)
                                 @php
                                     $prefix = \App\Models\ShootingGround::DAY_PREFIXES[(int) $iso - 1] ?? null;
@@ -49,19 +65,19 @@
                                     $isToday = (int) $iso === now()->dayOfWeekIso;
                                 @endphp
                                 <div class="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
-                                    <dt class="shrink-0 sm:w-28 {{ $isToday ? 'font-bold text-forest' : 'font-medium text-stone-600' }}">{{ $label }}</dt>
-                                    <dd class="leading-relaxed {{ $isToday ? 'font-semibold text-stone-900' : '' }}">
+                                    <dt class="shrink-0 sm:w-28 {{ $isToday ? 'font-bold text-tsl-primary' : 'font-medium text-tsl-secondary' }}">{{ $label }}</dt>
+                                    <dd class="leading-relaxed {{ $isToday ? 'font-semibold text-tsl-on-surface' : '' }}">
                                         @if ($o && $c)
                                             <span>{{ $o->format('g:ia') }}–{{ $c->format('g:ia') }}</span>
                                         @else
-                                            <span class="{{ $isToday ? 'text-stone-800' : 'text-stone-500' }}">Closed</span>
+                                            <span class="{{ $isToday ? 'text-tsl-on-surface' : 'text-tsl-outline' }}">Closed</span>
                                         @endif
                                     </dd>
                                 </div>
                             @endforeach
                         </dl>
                     @else
-                        <div class="mt-2 whitespace-pre-line text-sm leading-relaxed text-stone-700">{{ $ground->opening_hours }}</div>
+                        <div class="mt-3 whitespace-pre-line text-sm leading-relaxed text-tsl-secondary">{{ $ground->opening_hours }}</div>
                     @endif
                 </div>
             @endif
@@ -83,31 +99,31 @@
                 @endphp
 
                 @if ($weather ?? null)
-                    <div class="mt-6 overflow-hidden rounded-2xl border border-sky-200/80 bg-gradient-to-br from-sky-50 via-white to-cream-dark/40 px-5 py-5 shadow-sm ring-1 ring-sky-100/80">
+                    <div class="mt-8 overflow-hidden rounded-2xl border border-tsl-outline-variant/40 bg-gradient-to-br from-tsl-surface-container-low via-tsl-surface-container-lowest to-tsl-surface-container px-5 py-5 shadow-sm ring-1 ring-tsl-outline-variant/30">
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <h2 class="text-sm font-semibold text-forest">Weather now</h2>
-                                <p class="mt-1 text-xs text-stone-500">At this location · updates every ~15 minutes</p>
+                                <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Weather now</h2>
+                                <p class="mt-1 text-xs text-tsl-secondary">At this location · updates every ~15 minutes</p>
                             </div>
                             <div class="flex flex-wrap items-baseline gap-2 sm:justify-end">
-                                <span class="font-serif text-4xl font-semibold tabular-nums text-forest">{{ $weather['temp_c'] }}°</span>
-                                <span class="text-lg font-medium text-stone-500">C</span>
+                                <span class="font-tsl-headline text-4xl font-semibold tabular-nums text-tsl-primary">{{ $weather['temp_c'] }}°</span>
+                                <span class="text-lg font-medium text-tsl-secondary">C</span>
                             </div>
                         </div>
-                        <p class="mt-3 text-sm font-medium text-stone-800">{{ $weather['summary'] }}</p>
-                        <p class="mt-2 text-sm text-stone-600">
+                        <p class="mt-3 text-sm font-medium text-tsl-on-surface">{{ $weather['summary'] }}</p>
+                        <p class="mt-2 text-sm text-tsl-secondary">
                             Wind {{ $weather['wind_mph'] }} mph from {{ $weather['wind_from'] }}
                         </p>
-                        <p class="mt-4 text-[11px] leading-relaxed text-stone-400">
-                            <a href="https://open-meteo.com/" class="font-medium text-stone-500 underline decoration-stone-300 underline-offset-2 hover:text-forest" target="_blank" rel="noopener noreferrer">Weather data: Open-Meteo</a>
+                        <p class="mt-4 text-[11px] leading-relaxed text-tsl-outline">
+                            <a href="https://open-meteo.com/" class="font-medium text-tsl-secondary underline decoration-tsl-outline-variant underline-offset-2 hover:text-tsl-primary" target="_blank" rel="noopener noreferrer">Weather data: Open-Meteo</a>
                             (non-commercial use)
                         </p>
                     </div>
                 @endif
 
-                <div class="mt-6">
-                    <h2 class="sr-only">Location map</h2>
-                    <div class="overflow-hidden rounded-2xl bg-stone-100 ring-1 ring-stone-200/80">
+                <div class="mt-8">
+                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Map</h2>
+                    <div class="mt-3 overflow-hidden rounded-2xl bg-tsl-surface-container ring-1 ring-tsl-outline-variant/40">
                         <iframe
                             class="block h-[min(50vh,420px)] min-h-[280px] w-full border-0"
                             loading="lazy"
@@ -120,7 +136,7 @@
                     <p class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                         <a
                             href="https://www.openstreetmap.org/?mlat={{ $mapLat }}&mlon={{ $mapLng }}#map=15/{{ $mapLat }}/{{ $mapLng }}"
-                            class="font-medium text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light"
+                            class="font-semibold text-tsl-primary underline decoration-tsl-outline-variant underline-offset-2 hover:text-tsl-tertiary"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
@@ -128,7 +144,7 @@
                         </a>
                         <a
                             href="https://www.google.com/maps?q={{ $mapQuery }}"
-                            class="font-medium text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light"
+                            class="font-semibold text-tsl-primary underline decoration-tsl-outline-variant underline-offset-2 hover:text-tsl-tertiary"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
@@ -138,26 +154,26 @@
                 </div>
             @endif
 
-            <div class="mt-6 flex flex-wrap gap-2">
+            <div class="mt-8 flex flex-wrap gap-2">
                 @if ($ground->has_practice)
-                    <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-900">Practice</span>
+                    <span class="rounded-full bg-tsl-primary-container/15 px-3 py-1 text-xs font-semibold text-tsl-primary ring-1 ring-tsl-outline-variant/50">Practice</span>
                 @endif
                 @if ($ground->has_lessons)
-                    <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-900">Lessons</span>
+                    <span class="rounded-full bg-tsl-surface-container-high px-3 py-1 text-xs font-semibold text-tsl-primary ring-1 ring-tsl-outline-variant/50">Lessons</span>
                 @endif
                 @if ($ground->has_competitions)
-                    <span class="rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-900">Competitions</span>
+                    <span class="rounded-full bg-tsl-surface-container px-3 py-1 text-xs font-semibold text-tsl-tertiary ring-1 ring-tsl-outline-variant/40">Competitions</span>
                 @endif
             </div>
 
             @if ($ground->disciplines->isNotEmpty())
                 <div class="mt-6">
-                    <h2 class="text-sm font-semibold text-forest">Disciplines</h2>
+                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Disciplines</h2>
                     <ul class="mt-3 flex flex-wrap gap-2">
                         @foreach ($ground->disciplines as $disc)
-                            <li class="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-800 shadow-sm">
-                                <span class="font-mono font-semibold text-forest">{{ $disc->code }}</span>
-                                <span class="text-stone-500"> · </span>{{ $disc->name }}
+                            <li class="rounded-md border border-tsl-outline-variant/50 bg-tsl-surface-container-low px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide text-tsl-primary">
+                                {{ $disc->code }}
+                                <span class="font-tsl-body text-[11px] font-normal normal-case text-tsl-secondary"> — {{ $disc->name }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -166,10 +182,10 @@
 
             @if ($ground->facilities->isNotEmpty())
                 <div class="mt-6">
-                    <h2 class="text-sm font-semibold text-forest">Facilities</h2>
+                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Facilities</h2>
                     <ul class="mt-3 flex flex-wrap gap-2">
                         @foreach ($ground->facilities as $facility)
-                            <li class="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-800 ring-1 ring-stone-200/90">
+                            <li class="rounded-md border border-tsl-outline-variant/50 bg-tsl-surface-container-low px-2.5 py-1 text-xs font-medium text-tsl-on-surface">
                                 {{ $facility->name }}
                             </li>
                         @endforeach
@@ -177,39 +193,39 @@
                 </div>
             @endif
 
-            <section class="mt-8 rounded-xl border border-stone-200/90 bg-white px-5 py-5 shadow-sm ring-1 ring-stone-100/80" aria-labelledby="ground-competitions-heading">
+            <section class="mt-10 rounded-xl border border-tsl-outline-variant/40 bg-tsl-surface-container-lowest px-5 py-5 shadow-sm ring-1 ring-tsl-outline-variant/20" aria-labelledby="ground-competitions-heading">
                 <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                    <h2 id="ground-competitions-heading" class="text-sm font-semibold text-forest">Competitions &amp; opens</h2>
-                    <a href="{{ route('competitions.index') }}" class="text-xs font-medium text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light">
+                    <h2 id="ground-competitions-heading" class="font-tsl-headline text-lg font-semibold text-tsl-primary">Competitions &amp; opens</h2>
+                    <a href="{{ route('competitions.index') }}" class="text-xs font-semibold text-tsl-primary underline decoration-tsl-outline-variant underline-offset-2 hover:text-tsl-tertiary">
                         Full calendar
                     </a>
                 </div>
 
                 @if ($upcomingCompetitions->isEmpty() && $pastCompetitions->isEmpty())
-                    <p class="mt-3 text-sm text-stone-600">
-                        No events listed for this ground yet. See the <a href="{{ route('competitions.index') }}" class="font-medium text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light">competitions calendar</a> for fixtures elsewhere.
+                    <p class="mt-4 text-sm leading-relaxed text-tsl-secondary">
+                        No events listed for this ground yet. See the <a href="{{ route('competitions.index') }}" class="font-semibold text-tsl-primary underline decoration-tsl-outline-variant underline-offset-2 hover:text-tsl-tertiary">competitions calendar</a> for fixtures elsewhere.
                     </p>
                 @else
                     @if ($upcomingCompetitions->isNotEmpty())
-                        <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-stone-500">Upcoming</p>
-                        <ul class="mt-2 divide-y divide-stone-100">
+                        <p class="mt-6 text-xs font-semibold uppercase tracking-wider text-tsl-secondary">Upcoming</p>
+                        <ul class="mt-2 divide-y divide-tsl-outline-variant/30">
                             @foreach ($upcomingCompetitions as $c)
                                 <li class="flex gap-3 py-3 first:pt-0">
                                     <div class="shrink-0 text-center">
-                                        <time datetime="{{ $c->starts_at->toIso8601String() }}" class="inline-flex min-w-[3.25rem] flex-col rounded-lg bg-cream-dark/80 px-2 py-1.5 ring-1 ring-stone-200/80">
-                                            <span class="text-[10px] font-semibold uppercase tracking-wide text-stone-500">{{ $c->starts_at->format('D') }}</span>
-                                            <span class="font-serif text-base font-semibold tabular-nums text-forest">{{ $c->starts_at->format('j M') }}</span>
+                                        <time datetime="{{ $c->starts_at->toIso8601String() }}" class="inline-flex min-w-[3.25rem] flex-col rounded-lg bg-tsl-surface-container-low px-2 py-1.5 ring-1 ring-tsl-outline-variant/40">
+                                            <span class="text-[10px] font-semibold uppercase tracking-wide text-tsl-secondary">{{ $c->starts_at->format('D') }}</span>
+                                            <span class="font-tsl-headline text-base font-semibold tabular-nums text-tsl-primary">{{ $c->starts_at->format('j M') }}</span>
                                         </time>
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <a href="{{ route('competitions.show', $c) }}" class="font-medium text-forest underline decoration-forest/25 underline-offset-2 transition hover:text-forest-light">
+                                        <a href="{{ route('competitions.show', $c) }}" class="font-semibold text-tsl-primary underline decoration-tsl-outline-variant underline-offset-2 transition hover:text-tsl-tertiary">
                                             {{ $c->title }}
                                         </a>
                                         @if ($c->disciplineDisplay())
-                                            <p class="mt-0.5 text-xs text-stone-500">{{ $c->disciplineDisplay() }}</p>
+                                            <p class="mt-0.5 text-xs text-tsl-secondary">{{ $c->disciplineDisplay() }}</p>
                                         @endif
                                         @if ($c->summary)
-                                            <p class="mt-1 line-clamp-2 text-sm text-stone-600">{{ $c->summary }}</p>
+                                            <p class="mt-1 line-clamp-2 text-sm text-tsl-secondary">{{ $c->summary }}</p>
                                         @endif
                                     </div>
                                 </li>
@@ -218,22 +234,22 @@
                     @endif
 
                     @if ($pastCompetitions->isNotEmpty())
-                        <p class="mt-6 text-xs font-semibold uppercase tracking-wider text-stone-500">Earlier</p>
-                        <ul class="mt-2 divide-y divide-stone-100">
+                        <p class="mt-6 text-xs font-semibold uppercase tracking-wider text-tsl-secondary">Earlier</p>
+                        <ul class="mt-2 divide-y divide-tsl-outline-variant/30">
                             @foreach ($pastCompetitions as $c)
                                 <li class="flex gap-3 py-3 first:pt-0">
                                     <div class="shrink-0 text-center">
-                                        <time datetime="{{ $c->starts_at->toIso8601String() }}" class="inline-flex min-w-[3.25rem] flex-col rounded-lg bg-stone-50 px-2 py-1.5 ring-1 ring-stone-200/80">
-                                            <span class="text-[10px] font-semibold uppercase tracking-wide text-stone-400">{{ $c->starts_at->format('D') }}</span>
-                                            <span class="font-serif text-base font-semibold tabular-nums text-stone-600">{{ $c->starts_at->format('j M y') }}</span>
+                                        <time datetime="{{ $c->starts_at->toIso8601String() }}" class="inline-flex min-w-[3.25rem] flex-col rounded-lg bg-tsl-surface-container px-2 py-1.5 ring-1 ring-tsl-outline-variant/40">
+                                            <span class="text-[10px] font-semibold uppercase tracking-wide text-tsl-outline">{{ $c->starts_at->format('D') }}</span>
+                                            <span class="font-tsl-headline text-base font-semibold tabular-nums text-tsl-secondary">{{ $c->starts_at->format('j M y') }}</span>
                                         </time>
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <a href="{{ route('competitions.show', $c) }}" class="font-medium text-stone-700 underline decoration-stone-300 underline-offset-2 transition hover:text-forest">
+                                        <a href="{{ route('competitions.show', $c) }}" class="font-medium text-tsl-primary underline decoration-tsl-outline-variant underline-offset-2 transition hover:text-tsl-tertiary">
                                             {{ $c->title }}
                                         </a>
                                         @if ($c->disciplineDisplay())
-                                            <p class="mt-0.5 text-xs text-stone-500">{{ $c->disciplineDisplay() }}</p>
+                                            <p class="mt-0.5 text-xs text-tsl-secondary">{{ $c->disciplineDisplay() }}</p>
                                         @endif
                                     </div>
                                 </li>
@@ -244,39 +260,40 @@
             </section>
 
             @if ($ground->description)
-                <div class="prose prose-stone mt-8 max-w-none">
-                    <p class="whitespace-pre-wrap text-stone-700 leading-relaxed">{{ $ground->description }}</p>
+                <div class="mt-10 border-t border-tsl-outline-variant/40 pt-8">
+                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">About</h2>
+                    <p class="mt-4 whitespace-pre-wrap text-base leading-relaxed text-tsl-secondary">{{ $ground->description }}</p>
                 </div>
             @endif
 
-            <dl class="mt-10 space-y-6 border-t border-stone-200 pt-8">
+            <dl class="mt-10 space-y-6 border-t border-tsl-outline-variant/40 pt-8">
                 @if ($ground->practice_notes || $ground->has_practice)
                     <div>
-                        <dt class="text-sm font-semibold text-forest">Practice</dt>
-                        <dd class="mt-1 text-stone-600">{{ $ground->practice_notes ?: '—' }}</dd>
+                        <dt class="font-tsl-headline text-sm font-semibold text-tsl-primary">Practice</dt>
+                        <dd class="mt-1 text-tsl-secondary">{{ $ground->practice_notes ?: '—' }}</dd>
                     </div>
                 @endif
                 @if ($ground->lesson_notes || $ground->has_lessons)
                     <div>
-                        <dt class="text-sm font-semibold text-forest">Lessons</dt>
-                        <dd class="mt-1 text-stone-600">{{ $ground->lesson_notes ?: '—' }}</dd>
+                        <dt class="font-tsl-headline text-sm font-semibold text-tsl-primary">Lessons</dt>
+                        <dd class="mt-1 text-tsl-secondary">{{ $ground->lesson_notes ?: '—' }}</dd>
                     </div>
                 @endif
                 @if ($ground->competition_notes || $ground->has_competitions)
                     <div>
-                        <dt class="text-sm font-semibold text-forest">Competitions</dt>
-                        <dd class="mt-1 text-stone-600">{{ $ground->competition_notes ?: '—' }}</dd>
+                        <dt class="font-tsl-headline text-sm font-semibold text-tsl-primary">Competitions</dt>
+                        <dd class="mt-1 text-tsl-secondary">{{ $ground->competition_notes ?: '—' }}</dd>
                     </div>
                 @endif
             </dl>
 
             @if ($ground->events_urls && count($ground->events_urls) > 0)
                 <div class="mt-10">
-                    <h2 class="text-sm font-semibold text-forest">Events &amp; fixtures</h2>
-                    <ul class="mt-3 list-inside list-disc space-y-2 text-sm">
+                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Events &amp; fixtures</h2>
+                    <ul class="mt-3 list-inside list-disc space-y-2 text-sm text-tsl-secondary">
                         @foreach ($ground->events_urls as $url)
                             <li>
-                                <a href="{{ $url }}" class="text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light" target="_blank" rel="noopener noreferrer">{{ $url }}</a>
+                                <a href="{{ $url }}" class="font-medium text-tsl-primary underline decoration-tsl-outline-variant underline-offset-2 hover:text-tsl-tertiary" target="_blank" rel="noopener noreferrer">{{ $url }}</a>
                             </li>
                         @endforeach
                     </ul>
@@ -284,13 +301,13 @@
             @endif
 
             @if ($ground->website || $ground->facebook_url || $ground->instagram_url)
-                <nav class="mt-10 border-t border-stone-200 pt-8" aria-label="Website and social media">
+                <nav class="mt-10 border-t border-tsl-outline-variant/40 pt-8" aria-label="Website and social media">
                     <ul class="flex flex-wrap items-center gap-2">
                         @if ($ground->website)
                             <li>
                                 <a
                                     href="{{ $ground->website }}"
-                                    class="inline-flex size-11 items-center justify-center rounded-full text-stone-500 transition hover:bg-cream-dark/80 hover:text-forest"
+                                    class="inline-flex size-11 items-center justify-center rounded-full text-tsl-secondary transition hover:bg-tsl-surface-container-low hover:text-tsl-primary"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="Website"
@@ -305,7 +322,7 @@
                             <li>
                                 <a
                                     href="{{ $ground->facebook_url }}"
-                                    class="inline-flex size-11 items-center justify-center rounded-full text-stone-500 transition hover:bg-cream-dark/80 hover:text-forest"
+                                    class="inline-flex size-11 items-center justify-center rounded-full text-tsl-secondary transition hover:bg-tsl-surface-container-low hover:text-tsl-primary"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="Facebook"
@@ -320,7 +337,7 @@
                             <li>
                                 <a
                                     href="{{ $ground->instagram_url }}"
-                                    class="inline-flex size-11 items-center justify-center rounded-full text-stone-500 transition hover:bg-cream-dark/80 hover:text-forest"
+                                    class="inline-flex size-11 items-center justify-center rounded-full text-tsl-secondary transition hover:bg-tsl-surface-container-low hover:text-tsl-primary"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="Instagram"
@@ -334,6 +351,22 @@
                     </ul>
                 </nav>
             @endif
+
+            <div class="mt-10 flex flex-wrap gap-3 border-t border-tsl-outline-variant/40 pt-8">
+                <a
+                    href="{{ route('grounds.index') }}"
+                    class="inline-flex items-center justify-center rounded-full bg-tsl-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-tsl-primary-container"
+                >
+                    Browse directory
+                </a>
+                <a
+                    href="{{ route('competitions.index') }}"
+                    class="inline-flex items-center justify-center rounded-full border border-tsl-outline-variant bg-tsl-surface-container-lowest px-6 py-3 text-sm font-semibold text-tsl-primary shadow-sm transition hover:border-tsl-outline hover:bg-tsl-surface-container-low"
+                >
+                    Competitions calendar
+                </a>
+            </div>
         </article>
+        </div>
     </div>
 @endsection

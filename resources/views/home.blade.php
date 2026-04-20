@@ -194,13 +194,13 @@
         </div>
     </section>
 
-    {{-- Premier Grounds --}}
+    {{-- Featured shooting grounds --}}
     <section class="border-b border-stone-200/80 bg-cream px-4 py-16 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-7xl">
             <div class="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-[0.15em] text-stone-500">Ground selection</p>
-                    <h2 class="mt-2 font-serif text-3xl font-semibold text-forest md:text-4xl">Premier grounds</h2>
+                    <p class="text-xs font-semibold uppercase tracking-[0.15em] text-stone-500">{{ __('Hand picked') }}</p>
+                    <h2 class="mt-2 font-serif text-3xl font-semibold text-forest md:text-4xl">{{ __('Featured Shooting Grounds') }}</h2>
                 </div>
                 <a href="{{ route('grounds.index') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-forest transition hover:text-forest-light">
                     Explore full directory

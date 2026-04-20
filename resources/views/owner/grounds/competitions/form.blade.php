@@ -12,6 +12,8 @@
             <a href="{{ route('owner.grounds.competitions.index', $ground) }}" class="font-medium text-forest hover:text-forest-light">← Competitions</a>
         </nav>
 
+        @include('account._tabs', ['active' => 'grounds'])
+
         <h1 class="font-serif text-2xl font-semibold text-forest">{{ $editing ? 'Edit competition' : 'New competition' }}</h1>
         <p class="mt-1 text-sm text-stone-600">{{ $ground->name }}</p>
 

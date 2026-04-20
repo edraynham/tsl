@@ -8,6 +8,8 @@
             <a href="{{ route('owner.dashboard') }}" class="font-medium text-forest hover:text-forest-light">← My grounds</a>
         </nav>
 
+        @include('account._tabs', ['active' => 'grounds'])
+
         @include('owner.grounds._subnav', ['ground' => $ground])
 
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

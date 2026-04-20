@@ -8,6 +8,8 @@
             <a href="{{ route('owner.dashboard') }}" class="font-medium text-forest hover:text-forest-light">← My grounds</a>
         </nav>
 
+        @include('account._tabs', ['active' => 'grounds'])
+
         @include('owner.grounds._subnav', ['ground' => $ground])
 
         @if (session('status'))

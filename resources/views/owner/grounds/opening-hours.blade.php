@@ -8,6 +8,8 @@
             <a href="{{ route('owner.dashboard') }}" class="font-medium text-forest hover:text-forest-light">← My grounds</a>
         </nav>
 
+        @include('account._tabs', ['active' => 'grounds'])
+
         @include('owner.grounds._subnav', ['ground' => $ground])
 
         <h1 class="font-serif text-2xl font-semibold text-forest">Opening hours</h1>

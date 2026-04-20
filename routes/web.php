@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Account\InstructorProfileController;
 use App\Http\Controllers\Auth\MagicLoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CompetitionController;
@@ -63,6 +64,10 @@ Route::get('/account', function () {
         ? view('account.index')
         : view('auth.account');
 })->name('account');
+
+Route::middleware('auth')->group(function (): void {
+    Route::get('/account/instructor', InstructorProfileController::class)->name('account.instructor');
+});
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');

@@ -11,7 +11,7 @@ class EnsureSignupRolesComplete
     /**
      * Verified users must finish the “how you’ll use the site” step before browsing elsewhere.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -27,6 +27,7 @@ class EnsureSignupRolesComplete
 
         if ($request->routeIs([
             'account',
+            'account.instructor',
             'register.roles',
             'register.roles.store',
             'logout',

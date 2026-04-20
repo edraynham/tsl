@@ -29,14 +29,14 @@
                     No instructors are listed yet. Check back soon.
                 </p>
             @else
-                <ul class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <ul class="mt-14 grid auto-rows-fr gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($instructors as $instructor)
-                        <li>
+                        <li class="flex min-h-0">
                             <a
                                 href="{{ route('instructors.show', $instructor) }}"
-                                class="group flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200/90 bg-white shadow-sm transition hover:border-forest/25 hover:shadow-md"
+                                class="group flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-2xl border border-stone-200/90 bg-white shadow-sm transition hover:border-forest/25 hover:shadow-md"
                             >
-                                <div class="aspect-[4/3] bg-stone-100">
+                                <div class="aspect-[4/3] shrink-0 bg-stone-100">
                                     @if ($instructor->photo_url)
                                         <img
                                             src="{{ $instructor->photo_url }}"
@@ -50,7 +50,7 @@
                                         </div>
                                     @endif
                                 </div>
-                                <div class="flex flex-1 flex-col p-5">
+                                <div class="flex min-h-0 flex-1 flex-col p-5">
                                     <h2 class="font-serif text-xl font-semibold text-forest group-hover:text-forest-light">
                                         {{ $instructor->name }}
                                     </h2>
@@ -60,10 +60,10 @@
                                     @if ($instructor->locationLabel() !== '')
                                         <p class="mt-3 text-sm text-stone-600">{{ $instructor->locationLabel() }}</p>
                                     @endif
-                                    <p class="mt-4 line-clamp-3 flex-1 text-sm leading-relaxed text-stone-600">
+                                    <p class="mt-4 min-h-0 flex-1 line-clamp-3 text-sm leading-relaxed text-stone-600">
                                         {{ $instructor->bio ? \Illuminate\Support\Str::limit(strip_tags($instructor->bio), 160) : 'View profile' }}
                                     </p>
-                                    <span class="mt-4 text-sm font-semibold text-forest">View profile <span aria-hidden="true">→</span></span>
+                                    <span class="mt-auto pt-4 text-sm font-semibold text-forest">View profile <span aria-hidden="true">→</span></span>
                                 </div>
                             </a>
                         </li>

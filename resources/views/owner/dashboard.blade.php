@@ -4,7 +4,14 @@
 
 @section('content')
     <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <h1 class="font-serif text-3xl font-semibold text-forest">My grounds</h1>
+        <h1 class="font-serif text-3xl font-semibold text-forest">My account</h1>
+        <p class="mt-2 text-sm text-stone-600">
+            Signed in as <span class="font-medium text-stone-800">{{ auth()->user()->name }}</span>
+        </p>
+
+        @include('account._tabs', ['active' => 'grounds'])
+
+        <h2 class="mt-2 font-serif text-2xl font-semibold text-forest">My grounds</h2>
         <p class="mt-2 text-stone-600">
             Edit your public profile, opening hours, and competitions.
         </p>

@@ -35,32 +35,45 @@
                     </a>
 
                     <nav
-                        class="hidden flex-1 items-center justify-center gap-x-6 text-sm font-medium text-stone-700 lg:flex xl:gap-x-8"
+                        class="hidden flex-1 items-center justify-center gap-x-6 text-sm font-medium lg:flex xl:gap-x-8"
                         aria-label="Main"
                     >
-                        <a href="{{ route('grounds.index') }}" class="whitespace-nowrap transition hover:text-forest">Clay Grounds</a>
-                        <a href="{{ route('competitions.index') }}" class="whitespace-nowrap transition hover:text-forest">Competitions</a>
-                        <a href="{{ route('instructors.index') }}" class="whitespace-nowrap transition hover:text-forest">Instructors</a>
-                        <a href="{{ route('about') }}" class="whitespace-nowrap transition hover:text-forest">About TSL</a>
+                        <a
+                            href="{{ route('grounds.index') }}"
+                            @if (request()->routeIs('grounds.*')) aria-current="page" @endif
+                            class="whitespace-nowrap border-b-2 pb-1 transition {{ request()->routeIs('grounds.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-700 hover:text-forest' }}"
+                        >Clay Grounds</a>
+                        <a
+                            href="{{ route('competitions.index') }}"
+                            @if (request()->routeIs('competitions.*')) aria-current="page" @endif
+                            class="whitespace-nowrap border-b-2 pb-1 transition {{ request()->routeIs('competitions.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-700 hover:text-forest' }}"
+                        >Competitions</a>
+                        <a
+                            href="{{ route('instructors.index') }}"
+                            @if (request()->routeIs('instructors.*')) aria-current="page" @endif
+                            class="whitespace-nowrap border-b-2 pb-1 transition {{ request()->routeIs('instructors.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-700 hover:text-forest' }}"
+                        >Instructors</a>
                     </nav>
 
                     <div class="hidden items-center gap-3 lg:flex">
                         <form
                             action="{{ route('grounds.index') }}"
                             method="get"
-                            class="flex items-center rounded-full border border-stone-200 bg-white pl-3 pr-1 shadow-sm"
+                            class="flex h-10 w-10 shrink-0 items-center overflow-hidden rounded-full border border-stone-200 bg-white shadow-sm transition-[width,box-shadow] duration-200 ease-out focus-within:w-52 focus-within:border-stone-300 focus-within:shadow-md xl:focus-within:w-56"
                             role="search"
                         >
-                            <svg class="size-4 shrink-0 text-stone-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                            </svg>
-                            <label class="sr-only" for="header-search-q">Search grounds</label>
+                            <label for="header-search-q" class="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center">
+                                <span class="sr-only">Search grounds</span>
+                                <svg class="size-4 text-stone-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                </svg>
+                            </label>
                             <input
                                 id="header-search-q"
                                 type="search"
                                 name="q"
                                 placeholder="Search grounds..."
-                                class="w-36 border-0 bg-transparent py-2 pl-2 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-0 xl:w-52"
+                                class="min-w-0 flex-1 border-0 bg-transparent py-2 pr-2 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-0"
                             >
                             <button type="submit" class="sr-only">Search</button>
                         </form>
@@ -159,27 +172,24 @@
                     <nav class="flex flex-col gap-0.5 px-1 pt-2" aria-label="Main">
                         <a
                             href="{{ route('grounds.index') }}"
-                            class="rounded-xl px-3 py-3 text-base font-medium text-stone-800 transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5"
+                            @if (request()->routeIs('grounds.*')) aria-current="page" @endif
+                            class="rounded-xl border-b-2 px-3 py-3 text-base font-medium transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5 {{ request()->routeIs('grounds.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-800' }}"
                         >
                             Clay Grounds
                         </a>
                         <a
                             href="{{ route('competitions.index') }}"
-                            class="rounded-xl px-3 py-3 text-base font-medium text-stone-800 transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5"
+                            @if (request()->routeIs('competitions.*')) aria-current="page" @endif
+                            class="rounded-xl border-b-2 px-3 py-3 text-base font-medium transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5 {{ request()->routeIs('competitions.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-800' }}"
                         >
                             Competitions
                         </a>
                         <a
                             href="{{ route('instructors.index') }}"
-                            class="rounded-xl px-3 py-3 text-base font-medium text-stone-800 transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5"
+                            @if (request()->routeIs('instructors.*')) aria-current="page" @endif
+                            class="rounded-xl border-b-2 px-3 py-3 text-base font-medium transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5 {{ request()->routeIs('instructors.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-800' }}"
                         >
                             Instructors
-                        </a>
-                        <a
-                            href="{{ route('about') }}"
-                            class="rounded-xl px-3 py-3 text-base font-medium text-stone-800 transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5"
-                        >
-                            About TSL
                         </a>
                         @auth
                             @if (auth()->user()->hasVerifiedEmail() && auth()->user()->isGroundOwner())
@@ -283,9 +293,9 @@
                         <p class="text-xs font-semibold uppercase tracking-wider text-stone-500">Explore</p>
                         <ul class="mt-4 space-y-3 text-sm">
                             <li><a href="{{ route('grounds.index') }}" class="text-stone-700 hover:text-forest">Clay Grounds</a></li>
-                            <li><a href="{{ route('about') }}" class="text-stone-700 hover:text-forest">About</a></li>
                             <li><a href="{{ route('competitions.index') }}" class="text-stone-700 hover:text-forest">Competitions</a></li>
                             <li><a href="{{ route('instructors.index') }}" class="text-stone-700 hover:text-forest">Instructors</a></li>
+                            <li><a href="{{ route('about') }}" class="text-stone-700 hover:text-forest">About TSL</a></li>
                         </ul>
                     </div>
                     <div>

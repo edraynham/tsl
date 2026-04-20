@@ -8,6 +8,14 @@ use Illuminate\Database\Seeder;
 
 class InstructorSeeder extends Seeder
 {
+    /**
+     * Stable placeholder images (Lorem Picsum seeded by slug — avoids hotlink breakage from stock sites).
+     */
+    private static function photoUrlForSlug(string $slug): string
+    {
+        return 'https://picsum.photos/seed/tsl-instructor-'.$slug.'/1200/900';
+    }
+
     public function run(): void
     {
         $rows = [
@@ -18,7 +26,6 @@ class InstructorSeeder extends Seeder
                 'bio' => "Sarah has coached club and county-level shooters for over fifteen years. She specialises in building repeatable gun mounts and readable targets under pressure.\n\nLessons are available at grounds in Gloucestershire and by arrangement elsewhere.",
                 'city' => 'Cheltenham',
                 'county' => 'Gloucestershire',
-                'photo_url' => 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80',
                 'website' => 'https://example.com/instructors/sarah-mitchell',
             ],
             [
@@ -28,7 +35,6 @@ class InstructorSeeder extends Seeder
                 'bio' => "James works with ambitious skeet shots who want structured training plans and video review.\n\nHe runs regular group clinics in the Midlands and one-to-one days by request.",
                 'city' => 'Solihull',
                 'county' => 'West Midlands',
-                'photo_url' => 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=80',
                 'website' => null,
             ],
             [
@@ -38,7 +44,6 @@ class InstructorSeeder extends Seeder
                 'bio' => "Emma focuses on welcoming new shots to the sport with calm, clear instruction — ideal for first lessons and confidence building.\n\nGroup introductions and gift experiences are available.",
                 'city' => 'York',
                 'county' => 'North Yorkshire',
-                'photo_url' => 'https://images.unsplash.com/photo-1517649763962-0c62306601db?auto=format&fit=crop&w=1200&q=80',
                 'website' => 'https://example.com/instructors/emma-wright',
             ],
             [
@@ -48,7 +53,6 @@ class InstructorSeeder extends Seeder
                 'bio' => "Former competitive sporting shot turned coach; David helps shooters translate practice-ground form into driven and simulated game days.\n\nBased in Perthshire with travel across Scotland.",
                 'city' => 'Perth',
                 'county' => 'Perthshire',
-                'photo_url' => 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?auto=format&fit=crop&w=1200&q=80',
                 'website' => null,
             ],
             [
@@ -58,15 +62,90 @@ class InstructorSeeder extends Seeder
                 'bio' => "Lucy runs ladies-only coaching days and mixed group sessions with an emphasis on technique, fitness, and fun.\n\nShe is based in Devon and visits grounds in the South West.",
                 'city' => 'Exeter',
                 'county' => 'Devon',
-                'photo_url' => 'https://images.unsplash.com/photo-1517649763962-0c62306601db?auto=format&fit=crop&w=1200&q=80',
                 'website' => 'https://example.com/instructors/lucy-foster',
+            ],
+            [
+                'name' => 'Tom Aldridge',
+                'slug' => 'tom-aldridge',
+                'headline' => 'DTL & English Skeet · club coaching',
+                'bio' => "Tom has run squad training for county teams and helps club shots tighten their averages on DTL and skeet.\n\nHe coaches across East Anglia and welcomes improvers aiming for classification upgrades.",
+                'city' => 'Norwich',
+                'county' => 'Norfolk',
+                'website' => null,
+            ],
+            [
+                'name' => 'Rachel Owen',
+                'slug' => 'rachel-owen',
+                'headline' => 'Junior & academy pathways',
+                'bio' => "Rachel works with young shots and parents to build safe habits, confidence, and competition readiness.\n\nShe partners with grounds in Lancashire and Cheshire for regular junior sessions.",
+                'city' => 'Chester',
+                'county' => 'Cheshire',
+                'website' => 'https://example.com/instructors/rachel-owen',
+            ],
+            [
+                'name' => 'Marcus Bell',
+                'slug' => 'marcus-bell',
+                'headline' => 'FITASC · all-round gameshooting prep',
+                'bio' => "Marcus blends FITASC coaching with practical preparation for high birds and walked-up days.\n\nHe travels to grounds in the North East and Scottish Borders by arrangement.",
+                'city' => 'Newcastle upon Tyne',
+                'county' => 'Tyne and Wear',
+                'website' => null,
+            ],
+            [
+                'name' => 'Helen Price',
+                'slug' => 'helen-price',
+                'headline' => 'Olympic trap · structured fundamentals',
+                'bio' => "Helen breaks down Olympic trap technique into repeatable stages — setup, sight picture, and follow-through under finals pressure.\n\nBased near Cardiff with access to regional training facilities.",
+                'city' => 'Cardiff',
+                'county' => 'South Glamorgan',
+                'website' => 'https://example.com/instructors/helen-price',
+            ],
+            [
+                'name' => 'Chris Okonkwo',
+                'slug' => 'chris-okonkwo',
+                'headline' => 'Sporting · video analysis',
+                'bio' => "Chris uses slow-motion review and pattern boards to fix root causes rather than quick fixes.\n\nHalf-day and full-day sessions around the Home Counties; corporate groups welcome.",
+                'city' => 'St Albans',
+                'county' => 'Hertfordshire',
+                'website' => null,
+            ],
+            [
+                'name' => 'Anna Fraser',
+                'slug' => 'anna-fraser',
+                'headline' => 'Compak · Sporting clays',
+                'bio' => "Anna coaches shooters stepping from club level into registered competitions, with emphasis on routine and mental rehearsal.\n\nRegular slots at central Scotland grounds; online planning calls available.",
+                'city' => 'Stirling',
+                'county' => 'Stirlingshire',
+                'website' => 'https://example.com/instructors/anna-fraser',
+            ],
+            [
+                'name' => 'Rob Kent',
+                'slug' => 'rob-kent',
+                'headline' => 'Double trap · experienced competitor',
+                'bio' => "Rob brings decades of competition experience to one-to-one coaching and small squads.\n\nNow focused on coaching across Kent and Sussex with flexible weekday slots.",
+                'city' => 'Tunbridge Wells',
+                'county' => 'Kent',
+                'website' => null,
+            ],
+            [
+                'name' => 'Nina Patel',
+                'slug' => 'nina-patel',
+                'headline' => 'Beginners to intermediate · all disciplines',
+                'bio' => "Nina helps newcomers choose the right discipline and equipment, then builds skill with patient, structured lessons.\n\nShe teaches at several Midlands grounds and offers gift vouchers for introductions.",
+                'city' => 'Leicester',
+                'county' => 'Leicestershire',
+                'website' => 'https://example.com/instructors/nina-patel',
             ],
         ];
 
         foreach ($rows as $row) {
+            $slug = $row['slug'];
             Instructor::query()->updateOrCreate(
-                ['slug' => $row['slug']],
-                array_merge($row, ['user_id' => null])
+                ['slug' => $slug],
+                array_merge($row, [
+                    'user_id' => null,
+                    'photo_url' => self::photoUrlForSlug($slug),
+                ])
             );
         }
 
@@ -82,7 +161,7 @@ class InstructorSeeder extends Seeder
                     'bio' => "Ed offers structured coaching sessions focused on technique, consistency, and enjoying time on the peg.\n\nContact via the site to arrange a lesson.",
                     'city' => 'Stroud',
                     'county' => 'Gloucestershire',
-                    'photo_url' => null,
+                    'photo_url' => self::photoUrlForSlug('ed-raynham'),
                     'website' => null,
                 ]
             );

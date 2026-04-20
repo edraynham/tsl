@@ -35,7 +35,7 @@
                     </a>
 
                     <nav
-                        class="hidden flex-1 items-center justify-center gap-x-6 text-sm font-medium lg:flex xl:gap-x-8"
+                        class="hidden flex-1 items-center justify-center gap-x-6 text-base font-medium lg:flex xl:gap-x-8"
                         aria-label="Main"
                     >
                         <a

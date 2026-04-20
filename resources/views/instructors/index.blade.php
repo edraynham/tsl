@@ -36,16 +36,16 @@
                                 href="{{ route('instructors.show', $instructor) }}"
                                 class="group flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-2xl border border-stone-200/90 bg-white shadow-sm transition hover:border-forest/25 hover:shadow-md"
                             >
-                                <div class="aspect-[4/3] shrink-0 bg-stone-100">
+                                <div class="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-stone-100">
                                     @if ($instructor->photo_url)
                                         <img
                                             src="{{ $instructor->photo_url }}"
                                             alt=""
-                                            class="size-full object-cover transition group-hover:scale-[1.02]"
+                                            class="absolute inset-0 size-full object-cover transition group-hover:scale-[1.02]"
                                             loading="lazy"
                                         >
                                     @else
-                                        <div class="flex size-full items-center justify-center bg-gradient-to-br from-forest/10 to-stone-100">
+                                        <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-forest/10 to-stone-100">
                                             <span class="font-serif text-3xl font-semibold text-forest/40">{{ \Illuminate\Support\Str::substr($instructor->name, 0, 1) }}</span>
                                         </div>
                                     @endif

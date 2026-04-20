@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Competition;
 use App\Models\Discipline;
 use App\Models\ShootingGround;
 use App\Support\Geo;
@@ -125,6 +126,21 @@ class ShootingGroundController extends Controller
     {
         $shooting_ground->load(['openingHours', 'disciplines', 'facilities']);
 
+        $competitions = $shooting_ground->competitions()
+            ->with('canonicalDiscipline')
+            ->orderBy('starts_at')
+            ->get();
+
+        $upcomingCompetitions = $competitions
+            ->filter(fn (Competition $c) => ! $c->isPast())
+            ->values();
+
+        $pastCompetitions = $competitions
+            ->filter(fn (Competition $c) => $c->isPast())
+            ->sortByDesc(fn (Competition $c) => $c->starts_at)
+            ->take(24)
+            ->values();
+
         $weather = null;
         if ($shooting_ground->latitude !== null && $shooting_ground->longitude !== null) {
             $weather = Weather::currentForGround(
@@ -137,6 +153,8 @@ class ShootingGroundController extends Controller
         return view('grounds.show', [
             'ground' => $shooting_ground,
             'weather' => $weather,
+            'upcomingCompetitions' => $upcomingCompetitions,
+            'pastCompetitions' => $pastCompetitions,
         ]);
     }
 

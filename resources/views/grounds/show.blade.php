@@ -179,6 +179,72 @@
                 </div>
             @endif
 
+            <section class="mt-8 rounded-xl border border-stone-200/90 bg-white px-5 py-5 shadow-sm ring-1 ring-stone-100/80" aria-labelledby="ground-competitions-heading">
+                <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                    <h2 id="ground-competitions-heading" class="text-sm font-semibold text-forest">Competitions &amp; opens</h2>
+                    <a href="{{ route('competitions.index') }}" class="text-xs font-medium text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light">
+                        Full calendar
+                    </a>
+                </div>
+
+                @if ($upcomingCompetitions->isEmpty() && $pastCompetitions->isEmpty())
+                    <p class="mt-3 text-sm text-stone-600">
+                        No events listed for this ground yet. See the <a href="{{ route('competitions.index') }}" class="font-medium text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light">competitions calendar</a> for fixtures elsewhere.
+                    </p>
+                @else
+                    @if ($upcomingCompetitions->isNotEmpty())
+                        <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-stone-500">Upcoming</p>
+                        <ul class="mt-2 divide-y divide-stone-100">
+                            @foreach ($upcomingCompetitions as $c)
+                                <li class="flex gap-3 py-3 first:pt-0">
+                                    <div class="shrink-0 text-center">
+                                        <time datetime="{{ $c->starts_at->toIso8601String() }}" class="inline-flex min-w-[3.25rem] flex-col rounded-lg bg-cream-dark/80 px-2 py-1.5 ring-1 ring-stone-200/80">
+                                            <span class="text-[10px] font-semibold uppercase tracking-wide text-stone-500">{{ $c->starts_at->format('D') }}</span>
+                                            <span class="font-serif text-base font-semibold tabular-nums text-forest">{{ $c->starts_at->format('j M') }}</span>
+                                        </time>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <a href="{{ route('competitions.show', $c) }}" class="font-medium text-forest underline decoration-forest/25 underline-offset-2 transition hover:text-forest-light">
+                                            {{ $c->title }}
+                                        </a>
+                                        @if ($c->disciplineDisplay())
+                                            <p class="mt-0.5 text-xs text-stone-500">{{ $c->disciplineDisplay() }}</p>
+                                        @endif
+                                        @if ($c->summary)
+                                            <p class="mt-1 line-clamp-2 text-sm text-stone-600">{{ $c->summary }}</p>
+                                        @endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+
+                    @if ($pastCompetitions->isNotEmpty())
+                        <p class="mt-6 text-xs font-semibold uppercase tracking-wider text-stone-500">Earlier</p>
+                        <ul class="mt-2 divide-y divide-stone-100">
+                            @foreach ($pastCompetitions as $c)
+                                <li class="flex gap-3 py-3 first:pt-0">
+                                    <div class="shrink-0 text-center">
+                                        <time datetime="{{ $c->starts_at->toIso8601String() }}" class="inline-flex min-w-[3.25rem] flex-col rounded-lg bg-stone-50 px-2 py-1.5 ring-1 ring-stone-200/80">
+                                            <span class="text-[10px] font-semibold uppercase tracking-wide text-stone-400">{{ $c->starts_at->format('D') }}</span>
+                                            <span class="font-serif text-base font-semibold tabular-nums text-stone-600">{{ $c->starts_at->format('j M y') }}</span>
+                                        </time>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <a href="{{ route('competitions.show', $c) }}" class="font-medium text-stone-700 underline decoration-stone-300 underline-offset-2 transition hover:text-forest">
+                                            {{ $c->title }}
+                                        </a>
+                                        @if ($c->disciplineDisplay())
+                                            <p class="mt-0.5 text-xs text-stone-500">{{ $c->disciplineDisplay() }}</p>
+                                        @endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                @endif
+            </section>
+
             @if ($ground->description)
                 <div class="prose prose-stone mt-8 max-w-none">
                     <p class="whitespace-pre-wrap text-stone-700 leading-relaxed">{{ $ground->description }}</p>

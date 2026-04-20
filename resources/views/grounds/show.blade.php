@@ -270,19 +270,6 @@
                 @endif
             </dl>
 
-            @if ($ground->events_urls && count($ground->events_urls) > 0)
-                <div class="mt-10">
-                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Events &amp; fixtures</h2>
-                    <ul class="mt-3 list-inside list-disc space-y-2 text-sm text-tsl-secondary">
-                        @foreach ($ground->events_urls as $url)
-                            <li>
-                                <a href="{{ $url }}" class="font-medium text-tsl-primary underline decoration-tsl-outline-variant underline-offset-2 hover:text-tsl-tertiary" target="_blank" rel="noopener noreferrer">{{ $url }}</a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             @if ($ground->website || $ground->facebook_url || $ground->instagram_url)
                 <nav class="mt-10 border-t border-tsl-outline-variant/40 pt-8" aria-label="Website and social media">
                     <ul class="flex flex-wrap items-center gap-2">

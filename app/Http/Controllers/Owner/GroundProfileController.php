@@ -44,14 +44,12 @@ class GroundProfileController extends Controller
             'facebook_url' => ['nullable', 'string', 'max:2048'],
             'instagram_url' => ['nullable', 'string', 'max:2048'],
             'description' => ['nullable', 'string', 'max:50000'],
-            'opening_hours' => ['nullable', 'string', 'max:10000'],
             'has_practice' => ['boolean'],
             'has_lessons' => ['boolean'],
             'has_competitions' => ['boolean'],
             'practice_notes' => ['nullable', 'string', 'max:10000'],
             'lesson_notes' => ['nullable', 'string', 'max:10000'],
             'competition_notes' => ['nullable', 'string', 'max:10000'],
-            'events_urls_text' => ['nullable', 'string', 'max:10000'],
             'discipline_ids' => ['nullable', 'array'],
             'discipline_ids.*' => ['integer', 'exists:disciplines,id'],
             'facility_ids' => ['nullable', 'array'],
@@ -63,11 +61,6 @@ class GroundProfileController extends Controller
 
         unset($validated['discipline_ids'], $validated['facility_ids']);
 
-        $lines = preg_split('/\r\n|\r|\n/', (string) ($validated['events_urls_text'] ?? ''));
-        $urls = array_values(array_filter(array_map('trim', $lines), fn ($u) => is_string($u) && $u !== '' && filter_var($u, FILTER_VALIDATE_URL)));
-
-        unset($validated['events_urls_text']);
-        $validated['events_urls'] = $urls === [] ? null : $urls;
         $validated['has_practice'] = $request->boolean('has_practice');
         $validated['has_lessons'] = $request->boolean('has_lessons');
         $validated['has_competitions'] = $request->boolean('has_competitions');

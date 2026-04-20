@@ -219,17 +219,6 @@
                         <textarea name="competition_notes" id="competition_notes" rows="2" class="mt-1 w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest">{{ old('competition_notes', $ground->competition_notes) }}</textarea>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-stone-700" for="events_urls_text">Event URLs (one per line)</label>
-                        <textarea
-                            name="events_urls_text"
-                            id="events_urls_text"
-                            rows="4"
-                            placeholder="https://…"
-                            class="mt-1 w-full rounded-xl border border-stone-200 px-4 py-2.5 font-mono text-sm text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
-                        >{{ old('events_urls_text', $ground->events_urls ? implode("\n", $ground->events_urls) : '') }}</textarea>
-                    </div>
-
                     <div class="grid gap-4 sm:grid-cols-3">
                         <div>
                             <label class="block text-sm font-medium text-stone-700" for="website">Website</label>
@@ -243,12 +232,6 @@
                             <label class="block text-sm font-medium text-stone-700" for="instagram_url">Instagram</label>
                             <input type="url" name="instagram_url" id="instagram_url" value="{{ old('instagram_url', $ground->instagram_url) }}" class="mt-1 w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest">
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-stone-700" for="opening_hours">Free-text opening hours (optional)</label>
-                        <p class="text-xs text-stone-500">Shown only if structured hours are empty. Prefer the <a href="{{ route('owner.grounds.opening-hours.edit', $ground) }}" class="font-medium text-forest underline">opening hours editor</a>.</p>
-                        <textarea name="opening_hours" id="opening_hours" rows="3" class="mt-1 w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest">{{ old('opening_hours', $ground->opening_hours) }}</textarea>
                     </div>
 
                     @if ($errors->any())

@@ -71,7 +71,6 @@ class ShootingGroundSeeder extends Seeder
                     'practice_notes' => $this->nullableString($row['Practice Notes'] ?? null),
                     'lesson_notes' => $this->nullableString($row['Lesson Notes'] ?? null),
                     'competition_notes' => $this->nullableString($row['Competition Notes'] ?? null),
-                    'events_urls' => $this->parseEventsUrls($row['Events URL'] ?? null),
                 ]
             );
         }
@@ -112,22 +111,5 @@ class ShootingGroundSeeder extends Seeder
         }
 
         return is_numeric($s) ? $s : null;
-    }
-
-    private function parseEventsUrls(mixed $value): ?array
-    {
-        $raw = trim((string) $value);
-        if ($raw === '') {
-            return null;
-        }
-
-        $decoded = json_decode($raw, true);
-        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
-            return null;
-        }
-
-        $urls = array_values(array_filter($decoded, fn ($u) => is_string($u) && $u !== ''));
-
-        return $urls === [] ? null : $urls;
     }
 }

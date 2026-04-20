@@ -22,7 +22,7 @@
             {{-- Editorial header --}}
             <header class="mb-12 sm:mb-16">
                 <p class="mb-2 font-tsl-body text-xs font-semibold uppercase tracking-[0.15em] text-tsl-secondary">Curated collections</p>
-                <h1 class="mb-4 font-tsl-headline text-4xl font-bold tracking-tight text-tsl-primary md:text-5xl lg:text-6xl">Grounds directory</h1>
+                <h1 class="mb-4 font-tsl-headline text-4xl font-bold tracking-tight text-tsl-primary md:text-5xl lg:text-6xl">Shooting Grounds</h1>
                 <p class="max-w-2xl font-tsl-body text-lg leading-relaxed text-tsl-secondary">
                     Discover the finest sporting estates and shooting grounds. From historic woodland skeet to modern clay traps, find your next marksman destination.
                 </p>

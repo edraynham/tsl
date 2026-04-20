@@ -41,17 +41,17 @@
                         <a
                             href="{{ route('grounds.index') }}"
                             @if (request()->routeIs('grounds.*')) aria-current="page" @endif
-                            class="whitespace-nowrap border-b-2 pb-1 transition {{ request()->routeIs('grounds.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-700 hover:text-forest' }}"
+                            class="whitespace-nowrap transition {{ request()->routeIs('grounds.*') ? 'font-semibold text-forest' : 'text-stone-700 hover:text-forest' }}"
                         >Clay Grounds</a>
                         <a
                             href="{{ route('competitions.index') }}"
                             @if (request()->routeIs('competitions.*')) aria-current="page" @endif
-                            class="whitespace-nowrap border-b-2 pb-1 transition {{ request()->routeIs('competitions.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-700 hover:text-forest' }}"
+                            class="whitespace-nowrap transition {{ request()->routeIs('competitions.*') ? 'font-semibold text-forest' : 'text-stone-700 hover:text-forest' }}"
                         >Competitions</a>
                         <a
                             href="{{ route('instructors.index') }}"
                             @if (request()->routeIs('instructors.*')) aria-current="page" @endif
-                            class="whitespace-nowrap border-b-2 pb-1 transition {{ request()->routeIs('instructors.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-700 hover:text-forest' }}"
+                            class="whitespace-nowrap transition {{ request()->routeIs('instructors.*') ? 'font-semibold text-forest' : 'text-stone-700 hover:text-forest' }}"
                         >Instructors</a>
                     </nav>
 
@@ -79,14 +79,6 @@
                         </form>
 
                         @auth
-                            @if (auth()->user()->hasVerifiedEmail() && auth()->user()->isGroundOwner())
-                                <a
-                                    href="{{ route('owner.dashboard') }}"
-                                    class="inline-flex shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-forest shadow-sm transition hover:bg-stone-50"
-                                >
-                                    My grounds
-                                </a>
-                            @endif
                             <a
                                 href="{{ route('account') }}"
                                 class="inline-flex shrink-0 items-center justify-center rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-forest-light sm:px-6"
@@ -114,14 +106,6 @@
 
                     <div class="flex shrink-0 items-center gap-2 lg:hidden">
                         @auth
-                            @if (auth()->user()->hasVerifiedEmail() && auth()->user()->isGroundOwner())
-                                <a
-                                    href="{{ route('owner.dashboard') }}"
-                                    class="inline-flex min-h-11 items-center justify-center rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-forest shadow-sm transition hover:bg-stone-50 sm:px-4 sm:text-sm"
-                                >
-                                    My grounds
-                                </a>
-                            @endif
                             <a
                                 href="{{ route('account') }}"
                                 class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-forest px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-forest-light sm:px-5 sm:text-sm"
@@ -173,33 +157,25 @@
                         <a
                             href="{{ route('grounds.index') }}"
                             @if (request()->routeIs('grounds.*')) aria-current="page" @endif
-                            class="rounded-xl border-b-2 px-3 py-3 text-base font-medium transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5 {{ request()->routeIs('grounds.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-800' }}"
+                            class="rounded-xl px-3 py-3 text-base font-medium transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5 {{ request()->routeIs('grounds.*') ? 'font-semibold text-forest' : 'text-stone-800' }}"
                         >
                             Clay Grounds
                         </a>
                         <a
                             href="{{ route('competitions.index') }}"
                             @if (request()->routeIs('competitions.*')) aria-current="page" @endif
-                            class="rounded-xl border-b-2 px-3 py-3 text-base font-medium transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5 {{ request()->routeIs('competitions.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-800' }}"
+                            class="rounded-xl px-3 py-3 text-base font-medium transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5 {{ request()->routeIs('competitions.*') ? 'font-semibold text-forest' : 'text-stone-800' }}"
                         >
                             Competitions
                         </a>
                         <a
                             href="{{ route('instructors.index') }}"
                             @if (request()->routeIs('instructors.*')) aria-current="page" @endif
-                            class="rounded-xl border-b-2 px-3 py-3 text-base font-medium transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5 {{ request()->routeIs('instructors.*') ? 'border-forest font-semibold text-forest' : 'border-transparent text-stone-800' }}"
+                            class="rounded-xl px-3 py-3 text-base font-medium transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5 {{ request()->routeIs('instructors.*') ? 'font-semibold text-forest' : 'text-stone-800' }}"
                         >
                             Instructors
                         </a>
                         @auth
-                            @if (auth()->user()->hasVerifiedEmail() && auth()->user()->isGroundOwner())
-                                <a
-                                    href="{{ route('owner.dashboard') }}"
-                                    class="rounded-xl px-3 py-3 text-base font-medium text-forest transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5"
-                                >
-                                    My grounds
-                                </a>
-                            @endif
                             <a
                                 href="{{ route('account') }}"
                                 class="rounded-xl px-3 py-3 text-base font-medium text-forest transition hover:bg-stone-100 active:bg-stone-200/60 min-[400px]:py-3.5"

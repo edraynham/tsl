@@ -26,5 +26,10 @@
         @else
             <div class="mt-3 whitespace-pre-line text-sm leading-relaxed text-tsl-secondary">{{ $ground->opening_hours }}</div>
         @endif
+        @if ($at = $ground->openingHoursDisplayedUpdatedAt())
+            <p class="mt-4 border-t border-tsl-outline-variant/30 pt-4 text-[11px] leading-relaxed text-tsl-outline">
+                Last updated {{ $at->format('j M Y') }}
+            </p>
+        @endif
     </div>
 @endif

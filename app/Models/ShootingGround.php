@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 class ShootingGround extends Model
 {
@@ -41,7 +42,6 @@ class ShootingGround extends Model
         'practice_notes',
         'lesson_notes',
         'competition_notes',
-        'events_urls',
     ];
 
     protected function casts(): array
@@ -52,7 +52,6 @@ class ShootingGround extends Model
             'has_competitions' => 'boolean',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
-            'events_urls' => 'array',
         ];
     }
 
@@ -80,6 +79,22 @@ class ShootingGround extends Model
         $row = $this->openingHours;
 
         return $row !== null && $row->hasAtLeastOneOpenDay();
+    }
+
+    /**
+     * When the displayed opening hours were last saved: structured weekly row, or the ground record for free-text.
+     */
+    public function openingHoursDisplayedUpdatedAt(): ?Carbon
+    {
+        if ($this->hasStructuredWeeklyHours()) {
+            return $this->openingHours?->updated_at;
+        }
+
+        if (filled($this->opening_hours)) {
+            return $this->updated_at;
+        }
+
+        return null;
     }
 
     /**

@@ -1,7 +1,9 @@
 import '../css/app.css';
 import { initSiteHeader } from './site-header.js';
+import { initCookieNotice } from './cookie-notice.js';
 
 initSiteHeader();
+initCookieNotice();
 
 if (document.getElementById('directory-map')) {
     import('./directory-map.js').then((m) => m.initDirectoryMap());

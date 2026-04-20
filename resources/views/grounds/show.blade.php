@@ -156,20 +156,6 @@
                 @endif
             </div>
 
-            @if ($ground->disciplines->isNotEmpty())
-                <div class="mt-6">
-                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Disciplines</h2>
-                    <ul class="mt-3 flex flex-wrap gap-2">
-                        @foreach ($ground->disciplines as $disc)
-                            <li class="rounded-md border border-tsl-outline-variant/50 bg-tsl-surface-container-low px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide text-tsl-primary">
-                                {{ $disc->code }}
-                                <span class="font-tsl-body text-[11px] font-normal normal-case text-tsl-secondary"> — {{ $disc->name }}</span>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             @if ($ground->facilities->isNotEmpty())
                 <div class="mt-6">
                     <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Facilities</h2>

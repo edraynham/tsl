@@ -56,13 +56,7 @@ class CompetitionSeeder extends Seeder
             $daysOffset = $dayCursor + ($i * 11) % 17;
             $dayCursor = ($dayCursor + 7) % 14 + 8;
 
-            $durationDays = ($i % 5 === 2) ? 2 : 1;
             $starts = now()->addDays($daysOffset)->setTime(9 + ($i % 2), 30 * ($i % 2));
-
-            $ends = null;
-            if ($durationDays > 1) {
-                $ends = (clone $starts)->addDays($durationDays - 1)->setTime(17, 0);
-            }
 
             $fullTitle = $titleSuffix.' — '.$ground->name;
             $slug = Str::slug($ground->slug.'-'.$titleSuffix.'-'.$i);
@@ -75,7 +69,6 @@ class CompetitionSeeder extends Seeder
                 'slug' => $slug,
                 'summary' => $summary.' Check with the ground for entries and squadding.',
                 'starts_at' => $starts,
-                'ends_at' => $ends,
                 'discipline_id' => $disc['discipline_id'],
                 'discipline' => $disc['discipline'],
                 'external_url' => $ground->website,
@@ -103,7 +96,6 @@ class CompetitionSeeder extends Seeder
                 'slug' => Str::slug($ground->slug.'-extra-'.$j.'-'.$title),
                 'summary' => $summary,
                 'starts_at' => $starts,
-                'ends_at' => null,
                 'discipline_id' => $discPayload['discipline_id'],
                 'discipline' => $discPayload['discipline'],
                 'external_url' => $ground->website,

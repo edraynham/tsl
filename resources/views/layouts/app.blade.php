@@ -299,6 +299,29 @@
             </p>
         </footer>
     </div>
+
+    <aside
+        data-cookie-notice
+        class="pointer-events-none fixed right-4 bottom-4 z-[70] w-[min(92vw,360px)] translate-x-4 opacity-0 transition duration-300 ease-out"
+        aria-live="polite"
+    >
+        <div class="pointer-events-auto rounded-2xl border border-stone-200 bg-white p-4 shadow-[0_14px_30px_-10px_rgba(28,28,25,0.35)] sm:p-5">
+            <p class="font-semibold text-forest">Cookies on {{ config('app.name') }}</p>
+            <p class="mt-2 text-sm leading-relaxed text-stone-600">
+                We use essential cookies to keep the site working and remember preferences. By continuing, you accept this.
+                <a href="{{ route('privacy') }}" class="font-medium text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light">Learn more</a>.
+            </p>
+            <div class="mt-4 flex items-center justify-end gap-2">
+                <button
+                    type="button"
+                    data-cookie-accept
+                    class="inline-flex items-center justify-center rounded-lg bg-forest px-4 py-2 text-sm font-semibold text-white transition hover:bg-forest-light"
+                >
+                    Accept
+                </button>
+            </div>
+        </div>
+    </aside>
     @stack('scripts')
 </body>
 </html>

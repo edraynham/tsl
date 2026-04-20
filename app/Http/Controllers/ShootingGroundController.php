@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Competition;
 use App\Models\Discipline;
+use App\Models\Facility;
 use App\Models\ShootingGround;
 use App\Support\Geo;
 use App\Support\Weather;
@@ -14,6 +15,11 @@ use Illuminate\View\View;
 
 class ShootingGroundController extends Controller
 {
+    private const UK_POSTCODE_REGEX = '/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i';
+
+    /** @var list<int> */
+    private const ALLOWED_RADIUS_MILES = [10, 25, 50, 75];
+
     /**
      * JSON autocomplete for directory search (e.g. homepage hero).
      */
@@ -36,7 +42,7 @@ class ShootingGroundController extends Controller
             })
             ->orderBy('name')
             ->limit(10)
-            ->get(['name', 'slug', 'city', 'county']);
+            ->get(['name', 'slug', 'city', 'county', 'photo_url']);
 
         $suggestions = $grounds->map(function (ShootingGround $g) {
             $subtitle = collect([$g->city, $g->county])->filter()->implode(' · ');
@@ -44,6 +50,7 @@ class ShootingGroundController extends Controller
             return [
                 'name' => $g->name,
                 'subtitle' => $subtitle,
+                'photo_url' => $g->coverPhotoUrl(),
                 'url' => route('grounds.show', $g),
             ];
         })->values()->all();
@@ -54,15 +61,49 @@ class ShootingGroundController extends Controller
     public function index(Request $request): View
     {
         $disciplineFilter = $this->normalizedDisciplineIds($request);
+        $facilityFilter = $this->normalizedFacilityIds($request);
+        $q = trim((string) $request->input('q', ''));
 
-        $filtered = $this->filteredQuery($request, $disciplineFilter);
+        $requestUserLat = $request->input('user_lat');
+        $requestUserLng = $request->input('user_lng');
 
-        $userLat = $request->input('user_lat');
-        $userLng = $request->input('user_lng');
+        $postcodeCoords = null;
+        $postcodeLookupFailed = false;
+
+        if ($q !== '' && $this->looksLikeUkPostcode($q)) {
+            $postcodeCoords = Geo::geocodeUkSearch($q);
+            if ($postcodeCoords === null) {
+                $postcodeLookupFailed = true;
+            }
+        }
+
+        if ($postcodeCoords !== null) {
+            $userLat = $postcodeCoords['lat'];
+            $userLng = $postcodeCoords['lng'];
+        } else {
+            $userLat = $requestUserLat;
+            $userLng = $requestUserLng;
+        }
+
         $hasUserGeo = Geo::validUserCoords($userLat, $userLng);
+        $isPostcodeProximitySearch = $postcodeCoords !== null;
+
+        $filtered = $this->filteredQuery(
+            $request,
+            $disciplineFilter,
+            $facilityFilter,
+            $isPostcodeProximitySearch
+        );
+
+        $radiusMiles = $this->normalizedRadiusMiles($request);
+        if ($radiusMiles !== null && $hasUserGeo) {
+            $this->applyWithinMilesRadius($filtered, (float) $userLat, (float) $userLng, $radiusMiles);
+        }
 
         if ($request->filled('sort')) {
             $sort = (string) $request->input('sort');
+        } elseif ($isPostcodeProximitySearch) {
+            $sort = 'distance';
         } elseif ($hasUserGeo) {
             $sort = 'distance';
         } else {
@@ -106,9 +147,10 @@ class ShootingGroundController extends Controller
 
         return view('grounds.index', [
             'grounds' => $grounds,
-            'q' => trim((string) $request->input('q', '')),
+            'q' => $q,
             'sort' => $sort,
-            'facilities' => is_array($request->input('facility')) ? $request->input('facility') : [],
+            'facilityFilter' => $facilityFilter,
+            'allFacilities' => Facility::query()->orderBy('name')->get(),
             'disciplineFilter' => $disciplineFilter,
             'allDisciplines' => Discipline::query()->orderBy('name')->get(),
             'viewMode' => $viewMode,
@@ -119,6 +161,9 @@ class ShootingGroundController extends Controller
             'hasUserGeo' => $hasUserGeo,
             'userLat' => $hasUserGeo ? (float) $userLat : null,
             'userLng' => $hasUserGeo ? (float) $userLng : null,
+            'distanceMiles' => $radiusMiles,
+            'isPostcodeProximitySearch' => $isPostcodeProximitySearch,
+            'postcodeLookupFailed' => $postcodeLookupFailed,
         ]);
     }
 
@@ -174,6 +219,54 @@ class ShootingGroundController extends Controller
     }
 
     /**
+     * Great-circle distance filter (miles). Requires non-null ground coordinates.
+     */
+    private function applyWithinMilesRadius(Builder $query, float $userLat, float $userLng, float $radiusMiles): void
+    {
+        $earthMiles = 3958.7613;
+        $d2r = M_PI / 180.0;
+
+        $driver = $query->getConnection()->getDriverName();
+        // SQLite scalar clamp uses min/max; MySQL/MariaDB/Postgres use least/greatest.
+        $clamp = match ($driver) {
+            'sqlite' => 'min(1.0, max(-1.0,
+                    cos(? * ?) * cos(latitude * ?) * cos((longitude - ?) * ?)
+                    + sin(? * ?) * sin(latitude * ?)
+                ))',
+            default => 'least(1.0, greatest(-1.0,
+                    cos(? * ?) * cos(latitude * ?) * cos((longitude - ?) * ?)
+                    + sin(? * ?) * sin(latitude * ?)
+                ))',
+        };
+
+        $radiusMilesInt = (int) $radiusMiles;
+        $query->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->whereRaw(
+                "({$earthMiles} * acos({$clamp})) <= {$radiusMilesInt}",
+                [
+                    $userLat, $d2r,
+                    $d2r,
+                    $userLng, $d2r,
+                    $userLat, $d2r,
+                    $d2r,
+                ]
+            );
+    }
+
+    private function normalizedRadiusMiles(Request $request): ?float
+    {
+        $raw = $request->input('distance');
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+
+        $miles = (int) $raw;
+
+        return in_array($miles, self::ALLOWED_RADIUS_MILES, true) ? (float) $miles : null;
+    }
+
+    /**
      * @return list<int>
      */
     private function normalizedDisciplineIds(Request $request): array
@@ -195,14 +288,58 @@ class ShootingGroundController extends Controller
     }
 
     /**
-     * @param  list<int>  $disciplineIds
+     * @return list<int>
      */
-    private function filteredQuery(Request $request, array $disciplineIds = []): Builder
+    private function normalizedFacilityIds(Request $request): array
     {
+        $raw = $request->input('facility', []);
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $ids = [];
+        $slugs = [];
+        foreach ($raw as $id) {
+            if (is_numeric($id)) {
+                $id = (int) $id;
+                if ($id > 0) {
+                    $ids[] = $id;
+                }
+
+                continue;
+            }
+
+            $slug = trim((string) $id);
+            if ($slug !== '') {
+                $slugs[] = $slug;
+            }
+        }
+
+        if ($slugs !== []) {
+            $slugIds = Facility::query()
+                ->whereIn('slug', $slugs)
+                ->pluck('id')
+                ->all();
+            $ids = [...$ids, ...$slugIds];
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
+     * @param  list<int>  $disciplineIds
+     * @param  list<int>  $facilityIds
+     */
+    private function filteredQuery(
+        Request $request,
+        array $disciplineIds = [],
+        array $facilityIds = [],
+        bool $skipTextSearch = false
+    ): Builder {
         $query = ShootingGround::query()->with(['disciplines', 'facilities']);
 
         $q = trim((string) $request->input('q', ''));
-        if ($q !== '') {
+        if ($q !== '' && ! $skipTextSearch) {
             $like = '%'.$q.'%';
             $query->where(function ($sub) use ($like) {
                 $sub->where('name', 'like', $like)
@@ -212,18 +349,10 @@ class ShootingGroundController extends Controller
             });
         }
 
-        $facilities = $request->input('facility', []);
-        if (! is_array($facilities)) {
-            $facilities = [];
-        }
-        if (in_array('practice', $facilities, true)) {
-            $query->where('has_practice', true);
-        }
-        if (in_array('lessons', $facilities, true)) {
-            $query->where('has_lessons', true);
-        }
-        if (in_array('competitions', $facilities, true)) {
-            $query->where('has_competitions', true);
+        if ($facilityIds !== []) {
+            $query->whereHas('facilities', function ($q) use ($facilityIds): void {
+                $q->whereIn('facilities.id', $facilityIds);
+            });
         }
 
         if ($disciplineIds !== []) {
@@ -233,5 +362,10 @@ class ShootingGroundController extends Controller
         }
 
         return $query;
+    }
+
+    private function looksLikeUkPostcode(string $value): bool
+    {
+        return preg_match(self::UK_POSTCODE_REGEX, trim($value)) === 1;
     }
 }

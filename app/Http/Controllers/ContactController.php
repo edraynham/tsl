@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Mail\ContactMessageMail;
+use App\Mail\InstructorNewMessageMail;
 use App\Models\Instructor;
+use App\Models\InstructorMessage;
 use App\Models\ShootingGround;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,12 +32,7 @@ class ContactController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:40'],
-            'subject' => [
-                'nullable',
-                'string',
-                'max:180',
-                Rule::requiredIf(fn () => ! $request->filled('instructor_slug') && ! $request->filled('ground_slug')),
-            ],
+            'subject' => ['nullable', 'string', 'max:180'],
             'message' => ['required', 'string', 'max:10000'],
             'instructor_slug' => ['nullable', 'string', Rule::exists('instructors', 'slug')],
             'ground_slug' => ['nullable', 'string', Rule::exists('shooting_grounds', 'slug')],
@@ -47,13 +44,11 @@ class ContactController extends Controller
         ]);
 
         $to = config('mail.contact.address');
-        if (! is_string($to) || $to === '') {
-            return back()
-                ->withInput()
-                ->withErrors(['email' => __('Contact is not configured. Please try again later.')]);
-        }
 
         $subjectLine = trim((string) ($validated['subject'] ?? ''));
+        if ($subjectLine === '') {
+            $subjectLine = __('Enquiry');
+        }
         $bodyText = $validated['message'];
         $instructor = null;
 
@@ -66,6 +61,25 @@ class ContactController extends Controller
         if (! empty($validated['instructor_slug'])) {
             $instructor = Instructor::query()->where('slug', $validated['instructor_slug'])->first();
             if ($instructor !== null) {
+                $messageRecord = InstructorMessage::query()->create([
+                    'instructor_id' => $instructor->id,
+                    'sender_name' => $validated['name'],
+                    'sender_email' => $validated['email'],
+                    'sender_phone' => $validated['phone'] ?? null,
+                    'subject' => $subjectLine !== '' ? $subjectLine : null,
+                    'skill_level' => $validated['skill_level'] ?? null,
+                    'message' => $validated['message'],
+                ]);
+
+                $instructorUserEmail = $instructor->user?->email;
+                if (is_string($instructorUserEmail) && $instructorUserEmail !== '') {
+                    Mail::to($instructorUserEmail)->send(new InstructorNewMessageMail(
+                        instructor: $instructor,
+                        messageRecord: $messageRecord,
+                        accountUrl: route('account.instructor', absolute: true).'#messages',
+                    ));
+                }
+
                 if ($subjectLine === '') {
                     $subjectLine = __('Enquiry');
                 }
@@ -87,13 +101,19 @@ class ContactController extends Controller
             }
         }
 
-        Mail::to($to)->send(new ContactMessageMail(
-            senderName: $validated['name'],
-            senderEmail: $validated['email'],
-            senderPhone: $validated['phone'] ?? null,
-            subjectLine: $subjectLine,
-            bodyText: $bodyText,
-        ));
+        if (is_string($to) && $to !== '') {
+            Mail::to($to)->send(new ContactMessageMail(
+                senderName: $validated['name'],
+                senderEmail: $validated['email'],
+                senderPhone: $validated['phone'] ?? null,
+                subjectLine: $subjectLine,
+                bodyText: $bodyText,
+            ));
+        } elseif ($instructor === null) {
+            return back()
+                ->withInput()
+                ->withErrors(['email' => __('Contact is not configured. Please try again later.')]);
+        }
 
         $status = __('Thank you — your message has been sent. We’ll get back to you as soon as we can.');
 

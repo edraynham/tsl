@@ -13,6 +13,9 @@ class InstructorProfileController extends Controller
     public function show(Request $request): View
     {
         $instructor = $request->user()->instructorProfile;
+        if ($instructor !== null) {
+            $instructor->load(['messages' => fn ($q) => $q->latest()]);
+        }
 
         return view('account.instructor', compact('instructor'));
     }

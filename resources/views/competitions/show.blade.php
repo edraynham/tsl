@@ -39,6 +39,23 @@
 
             <h1 class="mt-2 font-serif text-3xl font-semibold tracking-tight text-forest sm:text-4xl">{{ $competition->title }}</h1>
 
+            @if (session('status'))
+                <div class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900" role="status">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            @if ($competition->bookingPageAvailable())
+                <div class="mt-6">
+                    <a
+                        href="{{ route('competitions.book', $competition) }}"
+                        class="inline-flex items-center justify-center rounded-full bg-forest px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-forest-light"
+                    >
+                        {{ __('Register online') }}
+                    </a>
+                </div>
+            @endif
+
             <div class="mt-6 rounded-xl border border-stone-200/90 bg-cream-dark/40 px-5 py-4">
                 <h2 class="text-sm font-semibold text-forest">When</h2>
                 <p class="mt-2 text-stone-800">
@@ -46,13 +63,6 @@
                         {{ $competition->starts_at->format('l j F Y') }}
                         <span class="text-stone-600">· {{ $competition->starts_at->format('g:ia') }}</span>
                     </time>
-                    @if ($competition->isMultiDay() && $competition->ends_at)
-                        <span class="block mt-1 text-sm text-stone-600">
-                            Until {{ $competition->ends_at->format('l j F Y, g:ia') }}
-                        </span>
-                    @elseif ($competition->ends_at && ! $competition->isMultiDay())
-                        <span class="text-stone-600"> — {{ $competition->ends_at->format('g:ia') }}</span>
-                    @endif
                 </p>
             </div>
 

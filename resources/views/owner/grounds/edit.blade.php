@@ -3,7 +3,20 @@
 @section('title', 'Edit '.$ground->name.' — '.config('app.name'))
 
 @section('content')
-    <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-10">
+    @php
+        $selectedDisciplineIds = collect(old('discipline_ids', $ground->disciplines->pluck('id')->all()))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->values()
+            ->all();
+        $selectedFacilityIds = collect(old('facility_ids', $ground->facilities->pluck('id')->all()))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->values()
+            ->all();
+    @endphp
+
+    <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:py-10">
         <nav class="mb-6 text-sm">
             <a href="{{ route('owner.dashboard') }}" class="font-medium text-forest hover:text-forest-light">← My grounds</a>
         </nav>
@@ -146,40 +159,21 @@
                     </div>
 
                     <div class="space-y-3 rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-4">
-                        <p class="text-sm font-medium text-stone-700">Facilities</p>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="hidden" name="has_practice" value="0">
-                            <input type="checkbox" name="has_practice" value="1" class="rounded border-stone-300 text-forest focus:ring-forest" @checked(old('has_practice', $ground->has_practice))>
-                            Practice
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="hidden" name="has_lessons" value="0">
-                            <input type="checkbox" name="has_lessons" value="1" class="rounded border-stone-300 text-forest focus:ring-forest" @checked(old('has_lessons', $ground->has_lessons))>
-                            Lessons
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="hidden" name="has_competitions" value="0">
-                            <input type="checkbox" name="has_competitions" value="1" class="rounded border-stone-300 text-forest focus:ring-forest" @checked(old('has_competitions', $ground->has_competitions))>
-                            Competitions
-                        </label>
-                    </div>
-
-                    <div class="space-y-3 rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-4">
                         <div>
                             <p class="text-sm font-medium text-stone-700">Disciplines offered</p>
                             <p class="mt-0.5 text-xs text-stone-500">Shown on your public ground page and in the directory.</p>
                         </div>
-                        <div class="max-h-56 space-y-2 overflow-y-auto pr-1">
+                        <div class="grid max-h-64 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
                             @foreach ($disciplines as $d)
-                                <label class="flex cursor-pointer items-start gap-2.5 text-sm">
+                                <label class="group flex cursor-pointer items-start gap-2.5 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm transition hover:border-forest/40 hover:bg-forest/[0.03] has-[:checked]:border-forest has-[:checked]:bg-forest/[0.06]">
                                     <input
                                         type="checkbox"
                                         name="discipline_ids[]"
                                         value="{{ $d->id }}"
                                         class="mt-0.5 rounded border-stone-300 text-forest focus:ring-forest"
-                                        @checked(in_array($d->id, old('discipline_ids', $ground->disciplines->pluck('id')->all()), true))
+                                        @checked(in_array($d->id, $selectedDisciplineIds, true))
                                     >
-                                    <span><span class="font-mono font-semibold text-forest">{{ $d->code }}</span> — {{ $d->name }}</span>
+                                    <span class="leading-relaxed"><span class="font-mono font-semibold text-forest">{{ $d->code }}</span> — {{ $d->name }}</span>
                                 </label>
                             @endforeach
                         </div>
@@ -190,19 +184,21 @@
                             <p class="text-sm font-medium text-stone-700">Facilities &amp; amenities</p>
                             <p class="mt-0.5 text-xs text-stone-500">e.g. cafe, gun hire — shown on your public listing.</p>
                         </div>
-                        <div class="max-h-48 space-y-2 overflow-y-auto pr-1">
-                            @foreach ($facilities as $f)
-                                <label class="flex cursor-pointer items-start gap-2.5 text-sm">
+                        <div class="grid max-h-56 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+                            @forelse ($facilities as $f)
+                                <label class="group flex cursor-pointer items-start gap-2.5 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm transition hover:border-forest/40 hover:bg-forest/[0.03] has-[:checked]:border-forest has-[:checked]:bg-forest/[0.06]">
                                     <input
                                         type="checkbox"
                                         name="facility_ids[]"
                                         value="{{ $f->id }}"
                                         class="mt-0.5 rounded border-stone-300 text-forest focus:ring-forest"
-                                        @checked(in_array($f->id, old('facility_ids', $ground->facilities->pluck('id')->all()), true))
+                                        @checked(in_array($f->id, $selectedFacilityIds, true))
                                     >
-                                    <span>{{ $f->name }}</span>
+                                    <span class="leading-relaxed">{{ $f->name }}</span>
                                 </label>
-                            @endforeach
+                            @empty
+                                <p class="col-span-full text-sm text-stone-500">No facility records found yet.</p>
+                            @endforelse
                         </div>
                     </div>
 

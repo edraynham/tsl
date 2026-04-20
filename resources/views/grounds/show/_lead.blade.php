@@ -18,3 +18,17 @@
         @endif
     </p>
 @endif
+
+@if ($ground->disciplines->isNotEmpty())
+    <div class="mt-4">
+        <p class="text-[11px] font-bold tracking-[0.15em] text-tsl-secondary uppercase">Disciplines</p>
+        <ul class="mt-2 flex flex-wrap gap-2">
+            @foreach ($ground->disciplines->sortBy('name') as $disc)
+                <li class="rounded-md border border-tsl-outline-variant/50 bg-tsl-surface-container-low px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide text-tsl-primary">
+                    {{ $disc->code }}
+                    <span class="font-tsl-body text-[11px] font-normal normal-case text-tsl-secondary"> — {{ $disc->name }}</span>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+@endif

@@ -71,17 +71,29 @@ export function initHomeSearchAutocomplete() {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className =
-                'flex w-full flex-col gap-0.5 px-4 py-2.5 text-left text-sm transition hover:bg-cream-dark/80 focus:bg-cream-dark/80 focus:outline-none';
+                'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-cream-dark/80 focus:bg-cream-dark/80 focus:outline-none';
+            if (s.photo_url) {
+                const thumb = document.createElement('img');
+                thumb.src = s.photo_url;
+                thumb.alt = '';
+                thumb.loading = 'lazy';
+                thumb.className = 'size-12 shrink-0 rounded-md object-cover ring-1 ring-stone-200';
+                btn.appendChild(thumb);
+            }
+
+            const textWrap = document.createElement('span');
+            textWrap.className = 'flex min-w-0 flex-1 flex-col gap-0.5';
             const nameSpan = document.createElement('span');
-            nameSpan.className = 'font-medium text-stone-900';
+            nameSpan.className = 'truncate font-medium text-stone-900';
             nameSpan.textContent = s.name;
-            btn.appendChild(nameSpan);
+            textWrap.appendChild(nameSpan);
             if (s.subtitle) {
                 const sub = document.createElement('span');
-                sub.className = 'text-xs text-stone-500';
+                sub.className = 'truncate text-xs text-stone-500';
                 sub.textContent = s.subtitle;
-                btn.appendChild(sub);
+                textWrap.appendChild(sub);
             }
+            btn.appendChild(textWrap);
 
             btn.addEventListener('click', () => {
                 window.location.href = s.url;

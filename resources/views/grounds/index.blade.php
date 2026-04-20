@@ -8,12 +8,14 @@
 
 @section('content')
     @php
-        $facilities = is_array($facilities ?? null) ? $facilities : [];
+        $facilityFilter = is_array($facilityFilter ?? null) ? $facilityFilter : [];
+        $allFacilities = isset($allFacilities) ? $allFacilities : collect();
         $disciplineFilter = is_array($disciplineFilter ?? null) ? $disciplineFilter : [];
         $allDisciplines = isset($allDisciplines) ? $allDisciplines : collect();
         $sort = $sort ?? 'az';
         $viewMode = $viewMode ?? 'list';
         $distance = request('distance');
+        $selectedRadiusMiles = isset($distanceMiles) && $distanceMiles !== null ? (int) $distanceMiles : null;
         $filterQuery = array_merge(request()->except(['page', 'distance']), ['view' => $viewMode]);
     @endphp
 
@@ -68,14 +70,33 @@
                                     class="w-full rounded-xl border-0 bg-tsl-surface-container-low px-4 py-3 text-sm text-tsl-on-surface placeholder:text-tsl-secondary/70 focus:ring-2 focus:ring-tsl-primary"
                                 >
                             </div>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach (['10' => '10 miles', '25' => '25 miles', '50' => '50+ miles'] as $miles => $label)
+                            @if ($postcodeLookupFailed ?? false)
+                                <p class="rounded-lg border border-tsl-outline-variant/60 bg-tsl-surface-container-high/50 px-3 py-2 text-xs leading-relaxed text-tsl-secondary" role="alert">
+                                    We couldn’t find that postcode. Check spelling or try a nearby town.
+                                </p>
+                            @endif
+                            <div class="flex flex-wrap gap-2" role="group" aria-label="Search radius">
+                                @foreach ([25 => '25 miles', 50 => '50 miles', 75 => '75 miles'] as $miles => $label)
+                                    @php
+                                        $radiusActive = $selectedRadiusMiles !== null && $selectedRadiusMiles === $miles;
+                                    @endphp
                                     <a
                                         href="{{ route('grounds.index', array_merge($filterQuery, ['distance' => $miles])) }}"
-                                        class="cursor-pointer rounded-full px-4 py-2 text-xs font-medium transition-colors {{ $distance === $miles ? 'bg-tsl-primary-container text-tsl-on-primary-container' : 'bg-tsl-surface-container-high text-tsl-secondary hover:bg-tsl-surface-container-highest' }}"
+                                        @if ($radiusActive) aria-current="true" @endif
+                                        class="cursor-pointer rounded-full px-4 py-2 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tsl-primary {{ $radiusActive ? 'bg-tsl-primary-container font-semibold text-tsl-on-primary-container shadow-sm ring-2 ring-tsl-primary/35 ring-offset-2 ring-offset-tsl-surface' : 'bg-tsl-surface-container-high text-tsl-secondary hover:bg-tsl-surface-container-highest' }}"
                                     >{{ $label }}</a>
                                 @endforeach
                             </div>
+                            <button
+                                type="button"
+                                id="directory-near-me"
+                                class="w-full rounded-xl border border-tsl-outline-variant/50 bg-tsl-surface-container-low px-4 py-3 text-sm font-semibold text-tsl-primary transition-colors hover:border-tsl-outline-variant hover:bg-tsl-surface-container"
+                            >
+                                Near me
+                            </button>
+                            <p class="text-xs leading-relaxed text-tsl-secondary/90">
+                                Use your device location for distance and “nearest first”. Enter a postcode above to search from there instead.
+                            </p>
                         </div>
                     </section>
 
@@ -106,50 +127,28 @@
                     <section>
                         <h3 class="mb-6 font-tsl-headline text-xl font-semibold text-tsl-primary">Facilities</h3>
                         <div class="space-y-3">
-                            <label class="group flex cursor-pointer items-center gap-3">
-                                <input
-                                    type="checkbox"
-                                    name="facility[]"
-                                    value="practice"
-                                    class="rounded-sm border-tsl-outline-variant text-tsl-primary focus:ring-tsl-primary"
-                                    @checked(in_array('practice', $facilities, true))
-                                    onchange="this.form.submit()"
-                                >
-                                <span class="text-sm font-medium text-tsl-secondary transition-colors group-hover:text-tsl-primary">Practice</span>
-                            </label>
-                            <label class="group flex cursor-pointer items-center gap-3">
-                                <input
-                                    type="checkbox"
-                                    name="facility[]"
-                                    value="lessons"
-                                    class="rounded-sm border-tsl-outline-variant text-tsl-primary focus:ring-tsl-primary"
-                                    @checked(in_array('lessons', $facilities, true))
-                                    onchange="this.form.submit()"
-                                >
-                                <span class="text-sm font-medium text-tsl-secondary transition-colors group-hover:text-tsl-primary">Expert tuition</span>
-                            </label>
-                            <label class="group flex cursor-pointer items-center gap-3">
-                                <input
-                                    type="checkbox"
-                                    name="facility[]"
-                                    value="competitions"
-                                    class="rounded-sm border-tsl-outline-variant text-tsl-primary focus:ring-tsl-primary"
-                                    @checked(in_array('competitions', $facilities, true))
-                                    onchange="this.form.submit()"
-                                >
-                                <span class="text-sm font-medium text-tsl-secondary transition-colors group-hover:text-tsl-primary">Competitions</span>
-                            </label>
-                            <label class="group flex cursor-not-allowed items-center gap-3 opacity-50">
-                                <input type="checkbox" disabled class="rounded-sm border-tsl-outline-variant text-tsl-primary">
-                                <span class="text-sm font-medium text-tsl-secondary">Clubhouse &amp; cafe</span>
-                            </label>
+                            @forelse ($allFacilities as $facility)
+                                <label class="group flex cursor-pointer items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        name="facility[]"
+                                        value="{{ $facility->id }}"
+                                        class="rounded-sm border-tsl-outline-variant text-tsl-primary focus:ring-tsl-primary"
+                                        @checked(in_array($facility->id, $facilityFilter, true))
+                                        onchange="this.form.submit()"
+                                    >
+                                    <span class="text-sm font-medium text-tsl-secondary transition-colors group-hover:text-tsl-primary">{{ $facility->name }}</span>
+                                </label>
+                            @empty
+                                <p class="text-sm text-tsl-secondary">No facilities available.</p>
+                            @endforelse
                         </div>
                     </section>
 
                     @if ($distance)
                         <input type="hidden" name="distance" value="{{ $distance }}">
                     @endif
-                    @if ($hasUserGeo ?? false)
+                    @if (($hasUserGeo ?? false) && ! ($isPostcodeProximitySearch ?? false))
                         <input type="hidden" name="user_lat" value="{{ $userLat }}">
                         <input type="hidden" name="user_lng" value="{{ $userLng }}">
                     @endif

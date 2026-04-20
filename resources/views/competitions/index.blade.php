@@ -190,11 +190,6 @@
                                     <span class="mt-1 block">{{ $featured->starts_at->format('j') }}</span>
                                     <span class="mt-2 block text-2xl font-medium text-white/85 sm:text-3xl">{{ $featured->starts_at->format('M Y') }}</span>
                                 </time>
-                                @if ($featured->isMultiDay())
-                                    <p class="mt-4 text-sm text-white/75">
-                                        Until {{ $featured->ends_at->format('j M Y') }}
-                                    </p>
-                                @endif
                             </div>
                             <div class="lg:col-span-8 lg:flex lg:flex-col lg:justify-center">
                                 <div class="mt-1 flex flex-wrap items-center gap-2">

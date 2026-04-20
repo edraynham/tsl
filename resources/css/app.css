@@ -40,6 +40,14 @@
     :root {
         color-scheme: light;
     }
+
+    button:not(:disabled) {
+        cursor: pointer;
+    }
+
+    button:disabled {
+        cursor: not-allowed;
+    }
 }
 
 @layer components {

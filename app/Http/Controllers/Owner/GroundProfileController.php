@@ -44,9 +44,6 @@ class GroundProfileController extends Controller
             'facebook_url' => ['nullable', 'string', 'max:2048'],
             'instagram_url' => ['nullable', 'string', 'max:2048'],
             'description' => ['nullable', 'string', 'max:50000'],
-            'has_practice' => ['boolean'],
-            'has_lessons' => ['boolean'],
-            'has_competitions' => ['boolean'],
             'practice_notes' => ['nullable', 'string', 'max:10000'],
             'lesson_notes' => ['nullable', 'string', 'max:10000'],
             'competition_notes' => ['nullable', 'string', 'max:10000'],
@@ -60,10 +57,6 @@ class GroundProfileController extends Controller
         $facilityIds = array_values(array_unique(array_map('intval', $validated['facility_ids'] ?? [])));
 
         unset($validated['discipline_ids'], $validated['facility_ids']);
-
-        $validated['has_practice'] = $request->boolean('has_practice');
-        $validated['has_lessons'] = $request->boolean('has_lessons');
-        $validated['has_competitions'] = $request->boolean('has_competitions');
 
         DB::transaction(function () use ($shooting_ground, $validated, $disciplineIds, $facilityIds): void {
             $shooting_ground->update($validated);

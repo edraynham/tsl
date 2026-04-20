@@ -3,7 +3,7 @@
 @section('title', 'My instructor profile — '.config('app.name'))
 
 @section('content')
-    <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:py-10">
         <h1 class="font-serif text-3xl font-semibold text-forest">My account</h1>
         <p class="mt-2 text-sm text-stone-600">
             Signed in as <span class="font-medium text-stone-800">{{ auth()->user()->name }}</span>
@@ -57,6 +57,47 @@
                     </div>
                 </div>
             </div>
+
+            <section id="messages" class="mt-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+                <h3 class="font-serif text-xl font-semibold text-forest">Messages</h3>
+                <p class="mt-1 text-sm text-stone-600">Enquiries sent from your public instructor profile.</p>
+
+                @php
+                    $messages = $instructor->messages ?? collect();
+                @endphp
+
+                @if ($messages->isEmpty())
+                    <p class="mt-4 rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm text-stone-600">
+                        No messages yet.
+                    </p>
+                @else
+                    <ul class="mt-5 space-y-3">
+                        @foreach ($messages as $message)
+                            <li class="rounded-xl border border-stone-200 bg-stone-50/60 px-4 py-4">
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                                    <span class="font-semibold text-stone-800">{{ $message->sender_name }}</span>
+                                    <span class="text-stone-400">•</span>
+                                    <a href="mailto:{{ $message->sender_email }}" class="text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light">{{ $message->sender_email }}</a>
+                                    @if ($message->sender_phone)
+                                        <span class="text-stone-400">•</span>
+                                        <span class="text-stone-700">{{ $message->sender_phone }}</span>
+                                    @endif
+                                </div>
+                                <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500">
+                                    <span>{{ $message->created_at?->format('j M Y, H:i') }}</span>
+                                    @if ($message->skill_level)
+                                        <span>Skill level: {{ ucfirst($message->skill_level) }}</span>
+                                    @endif
+                                </div>
+                                @if ($message->subject)
+                                    <p class="mt-3 text-sm font-semibold text-stone-800">{{ $message->subject }}</p>
+                                @endif
+                                <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-stone-700">{{ $message->message }}</p>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </section>
         @endif
 
         <form method="post" action="{{ route('logout') }}" class="mt-10">

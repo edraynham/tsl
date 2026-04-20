@@ -4,12 +4,16 @@ use App\Http\Controllers\Account\InstructorProfileController;
 use App\Http\Controllers\Auth\MagicLoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\CompetitionRegistrationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\Owner\DashboardController;
 use App\Http\Controllers\Owner\GroundCompetitionController;
+use App\Http\Controllers\Owner\GroundCompetitionRegistrationsController;
+use App\Http\Controllers\Owner\GroundCompetitionSquadsController;
 use App\Http\Controllers\Owner\GroundOpeningHoursController;
 use App\Http\Controllers\Owner\GroundProfileController;
+use App\Http\Controllers\Owner\OwnerCompetitionsController;
 use App\Http\Controllers\ShootingGroundController;
 use App\Models\Competition;
 use App\Models\ShootingGround;
@@ -42,6 +46,10 @@ Route::get('/grounds/{shooting_ground:slug}', [ShootingGroundController::class, 
 
 Route::get('/competitions', [CompetitionController::class, 'index'])->name('competitions.index');
 Route::get('/competitions/{competition:slug}', [CompetitionController::class, 'show'])->name('competitions.show');
+Route::get('/competitions/{competition:slug}/book', [CompetitionRegistrationController::class, 'create'])->name('competitions.book');
+Route::post('/competitions/{competition:slug}/book', [CompetitionRegistrationController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('competitions.book.store');
 
 Route::get('/instructors', [InstructorController::class, 'index'])->name('instructors.index');
 Route::get('/instructors/{instructor:slug}', [InstructorController::class, 'show'])->name('instructors.show');
@@ -109,16 +117,46 @@ Route::post('/email/verification-notification', function (Request $request) {
     return back()->with('status', __('A fresh verification link has been sent to your email address.'));
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
+Route::middleware(['auth', 'verified'])->group(function (): void {
+    Route::get('/account/competitions', [OwnerCompetitionsController::class, 'index'])->name('account.competitions.index');
+    Route::get('/account/competitions/create', [GroundCompetitionController::class, 'create'])->name('account.competitions.create');
+    Route::post('/account/competitions', [GroundCompetitionController::class, 'store'])->name('account.competitions.store');
+    Route::get('/account/competitions/{competition}/edit', [GroundCompetitionController::class, 'edit'])->name('account.competitions.edit');
+    Route::put('/account/competitions/{competition}', [GroundCompetitionController::class, 'update'])->name('account.competitions.update');
+    Route::delete('/account/competitions/{competition}', [GroundCompetitionController::class, 'destroy'])->name('account.competitions.destroy');
+    Route::get('/account/competitions/{competition}/squads', [GroundCompetitionSquadsController::class, 'edit'])->name('account.competitions.squads.edit');
+    Route::put('/account/competitions/{competition}/squads', [GroundCompetitionSquadsController::class, 'update'])->name('account.competitions.squads.update');
+    Route::get('/account/competitions/{competition}/registrations', [GroundCompetitionRegistrationsController::class, 'index'])->name('account.competitions.registrations.index');
+});
+
 Route::middleware(['auth', 'verified'])->prefix('owner')->name('owner.')->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
+    Route::get('/competitions', function (Request $request) {
+        return redirect()->route('account.competitions.index', $request->query(), 301);
+    })->name('competitions.index');
     Route::get('/grounds/{shooting_ground:slug}/edit', [GroundProfileController::class, 'edit'])->name('grounds.edit');
     Route::put('/grounds/{shooting_ground:slug}', [GroundProfileController::class, 'update'])->name('grounds.update');
     Route::get('/grounds/{shooting_ground:slug}/opening-hours', [GroundOpeningHoursController::class, 'edit'])->name('grounds.opening-hours.edit');
     Route::put('/grounds/{shooting_ground:slug}/opening-hours', [GroundOpeningHoursController::class, 'update'])->name('grounds.opening-hours.update');
-    Route::get('/grounds/{shooting_ground:slug}/competitions', [GroundCompetitionController::class, 'index'])->name('grounds.competitions.index');
-    Route::get('/grounds/{shooting_ground:slug}/competitions/create', [GroundCompetitionController::class, 'create'])->name('grounds.competitions.create');
-    Route::post('/grounds/{shooting_ground:slug}/competitions', [GroundCompetitionController::class, 'store'])->name('grounds.competitions.store');
-    Route::get('/grounds/{shooting_ground:slug}/competitions/{competition}/edit', [GroundCompetitionController::class, 'edit'])->name('grounds.competitions.edit');
-    Route::put('/grounds/{shooting_ground:slug}/competitions/{competition}', [GroundCompetitionController::class, 'update'])->name('grounds.competitions.update');
-    Route::delete('/grounds/{shooting_ground:slug}/competitions/{competition}', [GroundCompetitionController::class, 'destroy'])->name('grounds.competitions.destroy');
+    Route::get('/grounds/{shooting_ground:slug}/competitions', function (ShootingGround $shooting_ground) {
+        return redirect()->route('account.competitions.index', ['ground' => $shooting_ground->slug], 301);
+    })->name('grounds.competitions.index');
+    Route::get('/grounds/{shooting_ground:slug}/competitions/create', function (ShootingGround $shooting_ground) {
+        return redirect()->route('account.competitions.create', ['ground' => $shooting_ground->slug], 301);
+    })->name('grounds.competitions.create');
+    Route::get('/grounds/{shooting_ground:slug}/competitions/{competition}/edit', function (ShootingGround $shooting_ground, Competition $competition) {
+        abort_unless($competition->shooting_ground_id === $shooting_ground->id, 404);
+
+        return redirect()->route('account.competitions.edit', $competition, 301);
+    })->name('grounds.competitions.edit');
+    Route::get('/grounds/{shooting_ground:slug}/competitions/{competition}/squads', function (ShootingGround $shooting_ground, Competition $competition) {
+        abort_unless($competition->shooting_ground_id === $shooting_ground->id, 404);
+
+        return redirect()->route('account.competitions.squads.edit', $competition, 301);
+    })->name('grounds.competitions.squads.edit');
+    Route::get('/grounds/{shooting_ground:slug}/competitions/{competition}/registrations', function (ShootingGround $shooting_ground, Competition $competition) {
+        abort_unless($competition->shooting_ground_id === $shooting_ground->id, 404);
+
+        return redirect()->route('account.competitions.registrations.index', $competition, 301);
+    })->name('grounds.competitions.registrations.index');
 });

@@ -5,6 +5,7 @@
 @php
     $isProfile = $active === 'profile';
     $isGrounds = $active === 'grounds';
+    $isCompetitions = $active === 'competitions';
     $isInstructor = $active === 'instructor';
 
     $tabClass = fn (bool $on) => $on
@@ -26,6 +27,13 @@
         class="{{ $tabClass($isGrounds) }}"
     >
         My Grounds
+    </a>
+    <a
+        href="{{ route('account.competitions.index') }}"
+        @if ($isCompetitions) aria-current="page" @endif
+        class="{{ $tabClass($isCompetitions) }}"
+    >
+        {{ __('My Competitions') }}
     </a>
     <a
         href="{{ route('account.instructor') }}"

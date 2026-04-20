@@ -5,7 +5,11 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/js/app.js'],
+            input: [
+                'resources/js/app.js',
+                'resources/js/owner-competition-squads-entry.js',
+                'resources/js/owner-competition-form-entry.js',
+            ],
             refresh: true,
         }),
         tailwindcss(),

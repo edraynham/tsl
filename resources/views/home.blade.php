@@ -72,7 +72,7 @@
                 <p class="text-xs font-semibold uppercase tracking-[0.15em] text-stone-500">Try it</p>
                 <h2 id="clay-game-heading" class="mt-2 font-serif text-2xl font-semibold text-forest sm:text-3xl">Clay shooting range</h2>
                 <p class="mx-auto mt-2 max-w-lg text-sm text-stone-600">
-                    Twenty-five clays — edge-on, full face, or quartering away. How many can you hit?
+                    Twenty-five clays with varied lines: crossers, loopers, teal, and rabbit targets. How many can you hit?
                 </p>
             </div>
 
@@ -82,7 +82,7 @@
             >
                 <div
                     id="clay-game-intro"
-                    class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-stone-950/88 px-6 py-10 text-center backdrop-blur-[2px]"
+                    class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-stone-950/75 px-6 py-10 text-center backdrop-blur-[2px]"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="clay-game-intro-title"
@@ -100,35 +100,60 @@
                         @endauth
                     </p>
                     <p id="clay-game-intro-desc" class="max-w-sm text-sm leading-relaxed text-stone-300">
-                        You get <span class="font-semibold text-white">25 clays</span>. Tap or click each target before it disappears — edge-on, full face, or quartering away.
+                        You get <span class="font-semibold text-white">25 clays</span>, two shots each. Aim in front of each target so your shot intercepts it — left and right crossers, left and right loopers, teal, and rabbit.
                     </p>
                     <button
                         type="button"
                         id="clay-game-play"
-                        class="inline-flex min-h-11 items-center justify-center rounded-full bg-forest px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-forest-light focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950"
+                        class="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-8 py-3 text-sm font-semibold text-forest shadow-lg transition hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950"
                     >
                         Play the game
                     </button>
                 </div>
                 <div
                     id="clay-game-over"
-                    class="absolute inset-0 z-30 hidden flex flex-col items-center justify-center gap-4 bg-stone-950/92 px-6 py-10 text-center backdrop-blur-[2px]"
+                    class="absolute inset-0 z-30 hidden flex flex-col items-center justify-center bg-stone-950/92 px-6 py-10 text-center backdrop-blur-[2px]"
                     role="dialog"
                     aria-modal="true"
                     aria-hidden="true"
                     aria-labelledby="clay-game-over-title"
                     aria-describedby="clay-game-over-desc"
                 >
-                    <p id="clay-game-over-title" class="font-serif text-xl font-semibold text-white sm:text-2xl">
-                        Game over
-                    </p>
-                    <p id="clay-game-over-desc" class="max-w-sm text-sm leading-relaxed text-stone-300">
-                        You hit <span id="clay-game-final-score" class="font-semibold tabular-nums text-white">0</span> out of <span class="font-semibold text-white">25</span> clays.
-                    </p>
+                    <div class="w-full max-w-md rounded-2xl border border-white/15 bg-stone-900/75 p-6 shadow-2xl">
+                        <div class="mx-auto mb-3 inline-flex items-center gap-2 rounded-full border border-amber-200/35 bg-amber-100/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-amber-100">
+                            <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path d="M11.983 1.904a1.25 1.25 0 0 0-3.966 0L7.45 3.703c-.194.58-.736.972-1.348.972H4.14a1.25 1.25 0 0 0-.776 2.227l1.589 1.256c.474.374.673.996.505 1.573l-.57 1.95a1.25 1.25 0 0 0 1.896 1.39L8.5 12.92c.49-.347 1.142-.347 1.632 0l1.716 1.151a1.25 1.25 0 0 0 1.896-1.39l-.57-1.95a1.25 1.25 0 0 1 .505-1.573l1.589-1.256a1.25 1.25 0 0 0-.776-2.227h-1.962a1.42 1.42 0 0 1-1.348-.972l-.567-1.799Z" />
+                            </svg>
+                            <span id="clay-game-rating">Round complete</span>
+                        </div>
+                        <p id="clay-game-over-title" class="font-serif text-2xl font-semibold text-white sm:text-3xl">
+                            Game over
+                        </p>
+                        <p id="clay-game-over-desc" class="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-stone-300">
+                            You hit <span id="clay-game-final-score" class="font-semibold tabular-nums text-white">0</span> out of <span class="font-semibold text-white">25</span> clays.
+                        </p>
+                        <div class="mt-5 grid grid-cols-3 gap-2 text-left">
+                            <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                                <p class="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Hits</p>
+                                <p id="clay-game-stats-hits" class="mt-1 text-base font-semibold tabular-nums text-white">0</p>
+                            </div>
+                            <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                                <p class="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Missed</p>
+                                <p id="clay-game-stats-missed" class="mt-1 text-base font-semibold tabular-nums text-white">25</p>
+                            </div>
+                            <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                                <p class="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Hit rate</p>
+                                <p id="clay-game-stats-rate" class="mt-1 text-base font-semibold tabular-nums text-emerald-300">0%</p>
+                            </div>
+                        </div>
+                        <p id="clay-game-over-message" class="mt-4 text-sm leading-relaxed text-stone-300">
+                            Keep your gun moving through the target and call early.
+                        </p>
+                    </div>
                     <button
                         type="button"
                         id="clay-game-play-again"
-                        class="inline-flex min-h-11 items-center justify-center rounded-full bg-forest px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-forest-light focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950"
+                        class="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-forest px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-forest-light focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950"
                     >
                         Play again
                     </button>
@@ -143,6 +168,11 @@
                         <span class="text-stone-500">Clays</span>
                         <span id="clay-game-progress" class="font-semibold tabular-nums"><span id="clay-game-released">0</span><span class="text-stone-400">/</span>25</span>
                     </span>
+                    <span class="hidden h-4 w-px bg-stone-300 sm:block" aria-hidden="true"></span>
+                    <span class="flex items-center gap-1.5 text-stone-600">
+                        <span class="text-stone-500">Clay type</span>
+                        <span id="clay-game-type" class="font-semibold">Waiting...</span>
+                    </span>
                 </div>
                 <button
                     type="button"
@@ -155,11 +185,11 @@
                     id="clay-game-canvas"
                     class="block w-full cursor-crosshair touch-manipulation"
                     role="img"
-                    aria-label="Clay shooting range. Press Play the game to begin, then click or tap to shoot orange targets."
+                    aria-label="Clay shooting range. Press Play to begin, then click or tap ahead of the orange clays so your shot meets them in flight."
                 ></canvas>
             </div>
             <p class="mt-3 text-center text-xs text-stone-500 sm:text-sm">
-                Click or tap anywhere on the game to fire toward that point — aim for the orange clays.
+                Click or tap to shoot — aim where the clay will be when the shot arrives (lead the target).
             </p>
         </div>
     </section>

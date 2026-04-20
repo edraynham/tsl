@@ -84,26 +84,6 @@
                     @enderror
                 </div>
                 <div>
-                    <label for="contact-subject" class="block text-sm font-medium text-stone-700">
-                        Subject
-                        @if ($claimGround ?? null)
-                            <span class="font-normal text-stone-500">({{ __('optional') }})</span>
-                        @endif
-                    </label>
-                    <input
-                        type="text"
-                        name="subject"
-                        id="contact-subject"
-                        value="{{ old('subject') }}"
-                        @if (! ($claimGround ?? null)) required @endif
-                        maxlength="180"
-                        class="mt-1 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
-                    >
-                    @error('subject')
-                        <p class="mt-1 text-sm text-red-700">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
                     <label for="contact-message" class="block text-sm font-medium text-stone-700">Message</label>
                     <textarea
                         name="message"

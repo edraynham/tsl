@@ -3,7 +3,7 @@
 @section('title', 'My account — '.config('app.name'))
 
 @section('content')
-    <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
+    <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:py-10">
         <h1 class="font-serif text-3xl font-semibold text-forest">My account</h1>
         <p class="mt-2 text-sm text-stone-600">
             Signed in as <span class="font-medium text-stone-800">{{ auth()->user()->name }}</span>

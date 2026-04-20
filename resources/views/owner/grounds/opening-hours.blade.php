@@ -3,7 +3,7 @@
 @section('title', 'Opening hours — '.$ground->name)
 
 @section('content')
-    <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:py-10">
+    <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:py-10">
         <nav class="mb-6 text-sm">
             <a href="{{ route('owner.dashboard') }}" class="font-medium text-forest hover:text-forest-light">← My grounds</a>
         </nav>

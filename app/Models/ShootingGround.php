@@ -5,9 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ShootingGround extends Model
 {
+    /** @var list<string> monday … sunday — owner opening-hours form and column order */
+    public const DAY_PREFIXES = [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday',
+    ];
+
     protected $fillable = [
         'name',
         'slug',
@@ -50,15 +62,24 @@ class ShootingGround extends Model
     }
 
     /**
-     * Structured weekly slots (optional). When empty, use {@see $opening_hours} free-text from imports.
+     * Structured weekly times in the `opening_hours` table (one row per ground).
+     * When absent or empty, use {@see $opening_hours} free-text from imports.
      *
-     * @return HasMany<OpeningHour, $this>
+     * @return HasOne<OpeningHours, $this>
      */
-    public function openingHours(): HasMany
+    public function openingHours(): HasOne
     {
-        return $this->hasMany(OpeningHour::class)
-            ->orderBy('weekday')
-            ->orderBy('sort_order');
+        return $this->hasOne(OpeningHours::class);
+    }
+
+    /**
+     * True when the related row exists and at least one day has both open and close times.
+     */
+    public function hasStructuredWeeklyHours(): bool
+    {
+        $row = $this->openingHours;
+
+        return $row !== null && $row->hasAtLeastOneOpenDay();
     }
 
     /**

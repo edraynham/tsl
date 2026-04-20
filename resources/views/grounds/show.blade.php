@@ -35,29 +35,27 @@
                 </p>
             @endif
 
-            @if ($ground->openingHours->isNotEmpty() || $ground->opening_hours)
+            @if ($ground->hasStructuredWeeklyHours() || $ground->opening_hours)
                 <div class="mt-6 rounded-xl border border-stone-200/90 bg-cream-dark/40 px-5 py-4">
                     <h2 class="text-sm font-semibold text-forest">Opening hours</h2>
-                    @if ($ground->openingHours->isNotEmpty())
+                    @if ($ground->hasStructuredWeeklyHours())
+                        @php $oh = $ground->openingHours; @endphp
                         <dl class="mt-3 space-y-2 text-sm text-stone-700">
-                            @foreach ($ground->openingHours->groupBy('weekday') as $weekday => $slots)
+                            @foreach (\App\Models\OpeningHours::WEEKDAY_LABELS as $iso => $label)
+                                @php
+                                    $prefix = \App\Models\ShootingGround::DAY_PREFIXES[(int) $iso - 1] ?? null;
+                                    $o = $prefix ? $oh?->{$prefix.'_opens_at'} : null;
+                                    $c = $prefix ? $oh?->{$prefix.'_closes_at'} : null;
+                                    $isToday = (int) $iso === now()->dayOfWeekIso;
+                                @endphp
                                 <div class="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
-                                    <dt class="shrink-0 font-medium text-stone-600 sm:w-28">
-                                        {{ \App\Models\OpeningHour::WEEKDAY_LABELS[$weekday] ?? 'Day '.$weekday }}
-                                    </dt>
-                                    <dd class="leading-relaxed">
-                                        @foreach ($slots as $slot)
-                                            @if ($slot->opens_at && $slot->closes_at)
-                                                <span>{{ $slot->opens_at->format('g:ia') }}–{{ $slot->closes_at->format('g:ia') }}</span>
-                                            @elseif (! $slot->opens_at && ! $slot->closes_at)
-                                                <span class="text-stone-500">Closed</span>
-                                            @else
-                                                <span>{{ $slot->opens_at?->format('g:ia') }}{{ $slot->closes_at ? '–'.$slot->closes_at->format('g:ia') : '' }}</span>
-                                            @endif
-                                            @if (! $loop->last)
-                                                <span class="text-stone-400"> · </span>
-                                            @endif
-                                        @endforeach
+                                    <dt class="shrink-0 sm:w-28 {{ $isToday ? 'font-bold text-forest' : 'font-medium text-stone-600' }}">{{ $label }}</dt>
+                                    <dd class="leading-relaxed {{ $isToday ? 'font-semibold text-stone-900' : '' }}">
+                                        @if ($o && $c)
+                                            <span>{{ $o->format('g:ia') }}–{{ $c->format('g:ia') }}</span>
+                                        @else
+                                            <span class="{{ $isToday ? 'text-stone-800' : 'text-stone-500' }}">Closed</span>
+                                        @endif
                                     </dd>
                                 </div>
                             @endforeach

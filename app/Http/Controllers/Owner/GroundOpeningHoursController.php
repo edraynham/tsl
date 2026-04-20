@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
-use App\Models\OpeningHour;
+use App\Models\OpeningHours;
 use App\Models\ShootingGround;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,30 +16,25 @@ class GroundOpeningHoursController extends Controller
     public function edit(ShootingGround $shooting_ground): View
     {
         $this->authorize('manage', $shooting_ground);
-        $shooting_ground->load(['openingHours' => fn ($q) => $q->orderBy('weekday')->orderBy('sort_order')]);
+        $shooting_ground->load('openingHours');
 
-        $slots = old('slots');
-        if ($slots === null) {
-            if ($shooting_ground->openingHours->isNotEmpty()) {
-                $slots = $shooting_ground->openingHours->map(fn ($h) => [
-                    'weekday' => $h->weekday,
-                    'opens_at' => $h->opens_at ? $h->opens_at->format('H:i') : '',
-                    'closes_at' => $h->closes_at ? $h->closes_at->format('H:i') : '',
-                    'sort_order' => $h->sort_order,
-                ])->values()->all();
-            } else {
-                $slots = collect(range(1, 7))->map(fn ($d) => [
-                    'weekday' => $d,
-                    'opens_at' => '09:00',
-                    'closes_at' => '17:00',
-                    'sort_order' => 0,
-                ])->all();
+        $days = old('days');
+        if ($days === null) {
+            $row = $shooting_ground->openingHours;
+            $days = [];
+            foreach (ShootingGround::DAY_PREFIXES as $day) {
+                $o = $row?->{$day.'_opens_at'};
+                $c = $row?->{$day.'_closes_at'};
+                $days[$day] = [
+                    'opens_at' => $o ? $o->format('H:i') : '',
+                    'closes_at' => $c ? $c->format('H:i') : '',
+                ];
             }
         }
 
         return view('owner.grounds.opening-hours', [
             'ground' => $shooting_ground,
-            'slots' => $slots,
+            'days' => $days,
         ]);
     }
 
@@ -47,45 +42,57 @@ class GroundOpeningHoursController extends Controller
     {
         $this->authorize('manage', $shooting_ground);
 
-        $validated = $request->validate([
-            'slots' => ['present', 'array'],
-            'slots.*.weekday' => ['required', 'integer', 'min:1', 'max:7'],
-            'slots.*.opens_at' => ['nullable', 'date_format:H:i'],
-            'slots.*.closes_at' => ['nullable', 'date_format:H:i'],
-            'slots.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:10'],
-        ]);
+        $rules = [];
+        foreach (ShootingGround::DAY_PREFIXES as $day) {
+            $rules['days.'.$day.'.opens_at'] = ['nullable', 'date_format:H:i'];
+            $rules['days.'.$day.'.closes_at'] = ['nullable', 'date_format:H:i'];
+        }
+        $rules['days'] = ['required', 'array'];
 
-        foreach ($validated['slots'] as $i => $slot) {
-            $open = $slot['opens_at'] ?? null;
-            $close = $slot['closes_at'] ?? null;
-            if (($open !== null && $open !== '') xor ($close !== null && $close !== '')) {
+        $validated = $request->validate($rules);
+
+        foreach (ShootingGround::DAY_PREFIXES as $day) {
+            $open = $validated['days'][$day]['opens_at'] ?? null;
+            $close = $validated['days'][$day]['closes_at'] ?? null;
+            $open = ($open !== null && $open !== '') ? $open : null;
+            $close = ($close !== null && $close !== '') ? $close : null;
+            if (($open !== null) xor ($close !== null)) {
                 throw ValidationException::withMessages([
-                    "slots.$i.opens_at" => [__('Enter both opening and closing times, or leave both blank for that row.')],
+                    "days.$day.opens_at" => [__('Enter both opening and closing times, or leave both blank for that day.')],
                 ]);
             }
         }
 
         DB::transaction(function () use ($shooting_ground, $validated): void {
-            $shooting_ground->openingHours()->delete();
-
-            foreach ($validated['slots'] as $i => $slot) {
-                $open = $slot['opens_at'] ?? null;
-                $close = $slot['closes_at'] ?? null;
-                if (($open === null || $open === '') && ($close === null || $close === '')) {
-                    continue;
-                }
-
-                OpeningHour::query()->create([
-                    'shooting_ground_id' => $shooting_ground->id,
-                    'weekday' => (int) $slot['weekday'],
-                    'opens_at' => $open,
-                    'closes_at' => $close,
-                    'sort_order' => $i,
-                ]);
+            $attrs = ['shooting_ground_id' => $shooting_ground->id];
+            foreach (ShootingGround::DAY_PREFIXES as $day) {
+                $open = $validated['days'][$day]['opens_at'] ?? null;
+                $close = $validated['days'][$day]['closes_at'] ?? null;
+                $open = ($open !== null && $open !== '') ? $open : null;
+                $close = ($close !== null && $close !== '') ? $close : null;
+                $attrs[$day.'_opens_at'] = $open;
+                $attrs[$day.'_closes_at'] = $close;
             }
-        });
 
-        $shooting_ground->update(['opening_hours' => null]);
+            $hasAnyOpenDay = false;
+            foreach (ShootingGround::DAY_PREFIXES as $day) {
+                if ($attrs[$day.'_opens_at'] !== null && $attrs[$day.'_closes_at'] !== null) {
+                    $hasAnyOpenDay = true;
+                    break;
+                }
+            }
+
+            if ($hasAnyOpenDay) {
+                OpeningHours::query()->updateOrCreate(
+                    ['shooting_ground_id' => $shooting_ground->id],
+                    $attrs
+                );
+            } else {
+                $shooting_ground->openingHours()?->delete();
+            }
+
+            $shooting_ground->update(['opening_hours' => null]);
+        });
 
         return redirect()
             ->route('owner.grounds.opening-hours.edit', $shooting_ground)

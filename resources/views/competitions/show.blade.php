@@ -71,6 +71,51 @@
                 @endif
             </div>
 
+            @php
+                $googleEmbedSrc = null;
+                $googleMapsLink = null;
+                if ($ground->latitude && $ground->longitude) {
+                    $mapLat = (float) $ground->latitude;
+                    $mapLng = (float) $ground->longitude;
+                    $q = $mapLat.','.$mapLng;
+                    $googleEmbedSrc = 'https://www.google.com/maps?q='.rawurlencode($q).'&z=15&output=embed';
+                    $googleMapsLink = 'https://www.google.com/maps?q='.rawurlencode($q);
+                } elseif ($ground->full_address || $ground->postcode || $ground->city) {
+                    $q = $ground->full_address
+                        ?: trim(implode(', ', array_filter([$ground->name, $ground->city, $ground->postcode, $ground->county, 'UK'])));
+                    $googleEmbedSrc = 'https://www.google.com/maps?q='.rawurlencode($q).'&output=embed';
+                    $googleMapsLink = 'https://www.google.com/maps?q='.rawurlencode($q);
+                }
+            @endphp
+
+            @if ($googleEmbedSrc)
+                <div class="mt-6">
+                    <h2 class="text-sm font-semibold text-forest">Map</h2>
+                    <div class="mt-3 overflow-hidden rounded-2xl bg-stone-100 ring-1 ring-stone-200/80">
+                        <iframe
+                            class="block h-[min(50vh,420px)] min-h-[280px] w-full border-0"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            title="Google Map showing {{ $ground->name }}"
+                            src="{{ $googleEmbedSrc }}"
+                            allowfullscreen
+                        ></iframe>
+                    </div>
+                    @if ($googleMapsLink)
+                        <p class="mt-3 text-sm">
+                            <a
+                                href="{{ $googleMapsLink }}"
+                                class="font-medium text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Open in Google Maps
+                            </a>
+                        </p>
+                    @endif
+                </div>
+            @endif
+
             @if ($competition->summary)
                 <div class="prose prose-stone mt-10 max-w-none border-t border-stone-200 pt-8">
                     <h2 class="text-sm font-semibold text-forest">About this event</h2>

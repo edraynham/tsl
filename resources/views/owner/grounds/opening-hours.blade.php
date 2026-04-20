@@ -3,7 +3,7 @@
 @section('title', 'Opening hours — '.$ground->name)
 
 @section('content')
-    <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:py-10">
+    <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:py-10">
         <nav class="mb-6 text-sm">
             <a href="{{ route('owner.dashboard') }}" class="font-medium text-forest hover:text-forest-light">← My grounds</a>
         </nav>
@@ -14,7 +14,7 @@
 
         <h1 class="font-serif text-2xl font-semibold text-forest">Opening hours</h1>
         <p class="mt-1 text-sm text-stone-600">
-            Set open and close times for each row. Leave both times blank on a row to skip it. Split days (e.g. morning and afternoon) use two rows with the same weekday.
+            Set open and close times for each day. Leave both times blank for a closed day.
         </p>
 
         @if (session('status'))
@@ -26,57 +26,49 @@
             @method('PUT')
 
             <div class="overflow-x-auto rounded-2xl border border-stone-200 bg-white shadow-sm">
-                <table class="min-w-full divide-y divide-stone-200 text-sm">
+                <table class="min-w-[640px] w-full divide-y divide-stone-200 text-sm">
                     <thead>
-                        <tr class="bg-stone-50 text-left text-xs font-semibold uppercase tracking-wider text-stone-600">
-                            <th class="px-4 py-3">Weekday</th>
-                            <th class="px-4 py-3">Opens</th>
-                            <th class="px-4 py-3">Closes</th>
+                        <tr class="bg-stone-50 text-center text-xs font-semibold uppercase tracking-wider text-stone-600">
+                            @foreach (\App\Models\OpeningHours::WEEKDAY_LABELS as $label)
+                                <th class="px-2 py-3 sm:px-3">{{ $label }}</th>
+                            @endforeach
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-stone-100">
-                        @foreach ($slots as $i => $slot)
-                            <tr>
-                                <td class="px-4 py-2">
-                                    <label class="sr-only" for="weekday-{{ $i }}">Weekday</label>
-                                    <select
-                                        id="weekday-{{ $i }}"
-                                        name="slots[{{ $i }}][weekday]"
-                                        class="w-full rounded-lg border border-stone-200 bg-white px-2 py-2 text-stone-800 focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
-                                    >
-                                        @foreach (\App\Models\OpeningHour::WEEKDAY_LABELS as $n => $label)
-                                            <option value="{{ $n }}" @selected((int) ($slot['weekday'] ?? 1) === $n)>{{ $label }}</option>
-                                        @endforeach
-                                    </select>
+                        <tr>
+                            @foreach (\App\Models\ShootingGround::DAY_PREFIXES as $day)
+                                @php
+                                    $slot = $days[$day] ?? ['opens_at' => '', 'closes_at' => ''];
+                                @endphp
+                                <td class="align-top px-2 py-3 sm:px-3">
+                                    <div class="flex flex-col gap-2">
+                                        <div>
+                                            <label class="mb-0.5 block text-[10px] font-medium uppercase tracking-wide text-stone-500" for="opens-{{ $day }}">Opens</label>
+                                            <input
+                                                type="time"
+                                                id="opens-{{ $day }}"
+                                                name="days[{{ $day }}][opens_at]"
+                                                value="{{ $slot['opens_at'] ?? '' }}"
+                                                class="w-full min-w-0 rounded-lg border border-stone-200 px-1.5 py-2 font-mono text-xs focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest sm:text-sm"
+                                            >
+                                        </div>
+                                        <div>
+                                            <label class="mb-0.5 block text-[10px] font-medium uppercase tracking-wide text-stone-500" for="closes-{{ $day }}">Closes</label>
+                                            <input
+                                                type="time"
+                                                id="closes-{{ $day }}"
+                                                name="days[{{ $day }}][closes_at]"
+                                                value="{{ $slot['closes_at'] ?? '' }}"
+                                                class="w-full min-w-0 rounded-lg border border-stone-200 px-1.5 py-2 font-mono text-xs focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest sm:text-sm"
+                                            >
+                                        </div>
+                                    </div>
                                 </td>
-                                <td class="px-4 py-2">
-                                    <label class="sr-only" for="opens-{{ $i }}">Opens</label>
-                                    <input
-                                        type="time"
-                                        id="opens-{{ $i }}"
-                                        name="slots[{{ $i }}][opens_at]"
-                                        value="{{ $slot['opens_at'] ?? '' }}"
-                                        class="w-full rounded-lg border border-stone-200 px-2 py-2 font-mono text-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
-                                    >
-                                </td>
-                                <td class="px-4 py-2">
-                                    <label class="sr-only" for="closes-{{ $i }}">Closes</label>
-                                    <input
-                                        type="time"
-                                        id="closes-{{ $i }}"
-                                        name="slots[{{ $i }}][closes_at]"
-                                        value="{{ $slot['closes_at'] ?? '' }}"
-                                        class="w-full rounded-lg border border-stone-200 px-2 py-2 font-mono text-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
-                                    >
-                                    <input type="hidden" name="slots[{{ $i }}][sort_order]" value="{{ (int) ($slot['sort_order'] ?? 0) }}">
-                                </td>
-                            </tr>
-                        @endforeach
+                            @endforeach
+                        </tr>
                     </tbody>
                 </table>
             </div>
-
-            <p class="mt-4 text-xs text-stone-500">Need more rows? Save, then we can add a repeat block — for now duplicate a weekday in two rows.</p>
 
             @if ($errors->any())
                 <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">

@@ -2,77 +2,78 @@
 
 namespace Database\Seeders;
 
-use App\Models\OpeningHour;
+use App\Models\OpeningHours;
 use App\Models\ShootingGround;
 use Illuminate\Database\Seeder;
 
 class OpeningHourSeeder extends Seeder
 {
     /**
-     * Fabricated weekly schedules (ISO weekday 1 = Monday … 7 = Sunday).
+     * Fabricated weekly schedules. Keys: monday…sunday → [opens, closes] or nulls for closed.
      *
-     * @var list<list{array{0: int, 1: string, 2: string, 3?: int}}>
+     * @var list<array<string, array{0: string|null, 1: string|null}>>
      */
     private array $templates;
 
     public function __construct()
     {
+        $closed = [null, null];
         $this->templates = [
             // Tue–Sun 09:00–17:00; Monday closed
             [
-                [2, '09:00', '17:00', 0],
-                [3, '09:00', '17:00', 0],
-                [4, '09:00', '17:00', 0],
-                [5, '09:00', '17:00', 0],
-                [6, '09:00', '17:00', 0],
-                [7, '09:00', '16:00', 0],
+                'monday' => $closed,
+                'tuesday' => ['09:00', '17:00'],
+                'wednesday' => ['09:00', '17:00'],
+                'thursday' => ['09:00', '17:00'],
+                'friday' => ['09:00', '17:00'],
+                'saturday' => ['09:00', '17:00'],
+                'sunday' => ['09:00', '16:00'],
             ],
             // Mon–Fri 10:00–16:00; weekend longer
             [
-                [1, '10:00', '16:00', 0],
-                [2, '10:00', '16:00', 0],
-                [3, '10:00', '16:00', 0],
-                [4, '10:00', '16:00', 0],
-                [5, '10:00', '16:00', 0],
-                [6, '09:00', '17:00', 0],
-                [7, '09:00', '17:00', 0],
+                'monday' => ['10:00', '16:00'],
+                'tuesday' => ['10:00', '16:00'],
+                'wednesday' => ['10:00', '16:00'],
+                'thursday' => ['10:00', '16:00'],
+                'friday' => ['10:00', '16:00'],
+                'saturday' => ['09:00', '17:00'],
+                'sunday' => ['09:00', '17:00'],
             ],
             // Wed–Sun only
             [
-                [3, '09:30', '17:00', 0],
-                [4, '09:30', '17:00', 0],
-                [5, '09:30', '17:00', 0],
-                [6, '09:00', '17:30', 0],
-                [7, '10:00', '15:00', 0],
+                'monday' => $closed,
+                'tuesday' => $closed,
+                'wednesday' => ['09:30', '17:00'],
+                'thursday' => ['09:30', '17:00'],
+                'friday' => ['09:30', '17:00'],
+                'saturday' => ['09:00', '17:30'],
+                'sunday' => ['10:00', '15:00'],
             ],
-            // All week; Thursday split (morning + evening)
+            // All week; Thursday longer evening slot
             [
-                [1, '10:00', '16:00', 0],
-                [2, '10:00', '16:00', 0],
-                [3, '10:00', '16:00', 0],
-                [4, '09:00', '13:00', 0],
-                [4, '14:00', '20:00', 1],
-                [5, '09:00', '17:00', 0],
-                [6, '09:00', '17:00', 0],
-                [7, '10:00', '15:00', 0],
+                'monday' => ['10:00', '16:00'],
+                'tuesday' => ['10:00', '16:00'],
+                'wednesday' => ['10:00', '16:00'],
+                'thursday' => ['09:00', '20:00'],
+                'friday' => ['09:00', '17:00'],
+                'saturday' => ['09:00', '17:00'],
+                'sunday' => ['10:00', '15:00'],
             ],
-            // Typical club: closed Mon–Tue; rest of week
+            // Typical club: closed Mon–Tue
             [
-                [3, '10:00', '17:00', 0],
-                [4, '10:00', '17:00', 0],
-                [5, '10:00', '17:00', 0],
-                [6, '09:00', '17:00', 0],
-                [7, '09:00', '16:00', 0],
+                'monday' => $closed,
+                'tuesday' => $closed,
+                'wednesday' => ['10:00', '17:00'],
+                'thursday' => ['10:00', '17:00'],
+                'friday' => ['10:00', '17:00'],
+                'saturday' => ['09:00', '17:00'],
+                'sunday' => ['09:00', '16:00'],
             ],
         ];
     }
 
     public function run(): void
     {
-        OpeningHour::query()->delete();
-
-        ShootingGround::query()->update(['opening_hours' => null]);
-
         $grounds = ShootingGround::query()->orderBy('name')->get();
         if ($grounds->isEmpty()) {
             $this->command?->warn('No shooting grounds — run ShootingGroundSeeder first.');
@@ -84,18 +85,20 @@ class OpeningHourSeeder extends Seeder
 
         foreach ($grounds as $ground) {
             $idx = (crc32($ground->slug) % $n + $n) % $n;
-            foreach ($this->templates[$idx] as $slot) {
-                $sort = $slot[3] ?? 0;
-                OpeningHour::create([
-                    'shooting_ground_id' => $ground->id,
-                    'weekday' => $slot[0],
-                    'opens_at' => $slot[1],
-                    'closes_at' => $slot[2],
-                    'sort_order' => $sort,
-                ]);
+            $tpl = $this->templates[$idx];
+            $attrs = ['shooting_ground_id' => $ground->id];
+            foreach (ShootingGround::DAY_PREFIXES as $day) {
+                [$open, $close] = $tpl[$day];
+                $attrs[$day.'_opens_at'] = $open;
+                $attrs[$day.'_closes_at'] = $close;
             }
+            OpeningHours::query()->updateOrCreate(
+                ['shooting_ground_id' => $ground->id],
+                $attrs
+            );
+            $ground->update(['opening_hours' => null]);
         }
 
-        $this->command?->info('Seeded opening hours for '.$grounds->count().' grounds.');
+        $this->command?->info('Seeded weekly opening hours for '.$grounds->count().' grounds.');
     }
 }

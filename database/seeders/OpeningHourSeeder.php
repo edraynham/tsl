@@ -96,7 +96,6 @@ class OpeningHourSeeder extends Seeder
                 ['shooting_ground_id' => $ground->id],
                 $attrs
             );
-            $ground->update(['opening_hours' => null]);
         }
 
         $this->command?->info('Seeded weekly opening hours for '.$grounds->count().' grounds.');

@@ -52,6 +52,7 @@ class RegisterController extends Controller
             'password' => null,
             'is_shooter' => false,
             'is_organiser' => false,
+            'is_instructor' => false,
             'registration_roles_completed_at' => null,
         ]);
 
@@ -64,7 +65,7 @@ class RegisterController extends Controller
     }
 
     /**
-     * Step 3: after email verification — choose shooter / organiser (at least one).
+     * Step 3: after email verification — choose shooter / organiser / instructor (at least one).
      */
     public function editRoles(Request $request): RedirectResponse|View
     {
@@ -87,9 +88,9 @@ class RegisterController extends Controller
 
         $validated = $request->validate([
             'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['in:shooter,organiser'],
+            'roles.*' => ['in:shooter,organiser,instructor'],
         ], [
-            'roles.required' => 'Please select whether you are a shooter, a ground owner / organiser, or both.',
+            'roles.required' => 'Please select whether you are a shooter, a ground owner / organiser, an instructor, or any combination.',
             'roles.min' => 'Please select at least one option.',
         ]);
 
@@ -98,6 +99,7 @@ class RegisterController extends Controller
         $user->forceFill([
             'is_shooter' => in_array('shooter', $roles, true),
             'is_organiser' => in_array('organiser', $roles, true),
+            'is_instructor' => in_array('instructor', $roles, true),
             'registration_roles_completed_at' => now(),
         ])->save();
 

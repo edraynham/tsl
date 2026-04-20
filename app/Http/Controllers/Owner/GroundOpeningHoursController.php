@@ -91,7 +91,6 @@ class GroundOpeningHoursController extends Controller
                 $shooting_ground->openingHours()?->delete();
             }
 
-            $shooting_ground->update(['opening_hours' => null]);
         });
 
         return redirect()

@@ -51,7 +51,7 @@
                         {{ __('Time') }}
                     </div>
                     <div class="w-16 shrink-0 text-[10px] font-semibold uppercase leading-tight tracking-wide text-stone-600 sm:w-20 sm:text-xs">
-                        {{ __('Size') }}
+                        {{ __('People') }}
                     </div>
                     <div class="w-10 shrink-0 sm:w-11" aria-hidden="true"></div>
                 </div>
@@ -93,7 +93,7 @@
                                 >
                             </div>
                             <div class="w-16 shrink-0 sm:w-20">
-                                <label for="sq-size-{{ $i }}" class="sr-only">{{ __('Squad size') }}</label>
+                                <label for="sq-size-{{ $i }}" class="sr-only">{{ __('People') }}</label>
                                 <select
                                     name="squads[{{ $i }}][max_participants]"
                                     id="sq-size-{{ $i }}"
@@ -164,7 +164,7 @@
                         >
                     </div>
                     <div class="w-16 shrink-0 sm:w-20">
-                        <label class="sr-only" for="sq-size-__INDEX__">{{ __('Squad size') }}</label>
+                        <label class="sr-only" for="sq-size-__INDEX__">{{ __('People') }}</label>
                         <select
                             name="squads[__INDEX__][max_participants]"
                             id="sq-size-__INDEX__"

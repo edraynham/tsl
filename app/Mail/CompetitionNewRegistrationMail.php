@@ -9,15 +9,23 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 
 class CompetitionNewRegistrationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    /**
+     * @param  Collection<int, CompetitionRegistration>|array<int, CompetitionRegistration>  $registrations
+     */
     public function __construct(
         public Competition $competition,
-        public CompetitionRegistration $registration,
-    ) {}
+        public Collection|array $registrations,
+    ) {
+        $this->registrations = $registrations instanceof Collection
+            ? $registrations
+            : collect($registrations);
+    }
 
     public function envelope(): Envelope
     {

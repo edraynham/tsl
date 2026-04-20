@@ -81,11 +81,13 @@ class CompetitionRegistrationTest extends TestCase
             'competition_id' => $competition->id,
             'competition_squad_id' => null,
             'cpsa_number' => '12345',
+            'party_size' => 1,
         ]);
 
         Mail::assertSent(CompetitionNewRegistrationMail::class, function (CompetitionNewRegistrationMail $mail) use ($owner, $competition) {
             return $mail->hasTo($owner->email)
-                && $mail->competition->is($competition);
+                && $mail->competition->is($competition)
+                && $mail->registrations->count() === 1;
         });
     }
 
@@ -101,6 +103,7 @@ class CompetitionRegistrationTest extends TestCase
             'entrant_name' => 'Existing',
             'email' => 'ex@example.com',
             'telephone' => '07000000000',
+            'party_size' => 1,
         ]);
 
         $response = $this->from(route('competitions.book', $competition))->post(route('competitions.book.store', $competition), [
@@ -126,6 +129,7 @@ class CompetitionRegistrationTest extends TestCase
             'entrant_name' => 'A',
             'email' => 'a@example.com',
             'telephone' => '01',
+            'party_size' => 1,
         ]);
         CompetitionRegistration::query()->create([
             'competition_id' => $competition->id,
@@ -134,6 +138,7 @@ class CompetitionRegistrationTest extends TestCase
             'entrant_name' => 'B',
             'email' => 'b@example.com',
             'telephone' => '02',
+            'party_size' => 1,
         ]);
 
         $response = $this->from(route('competitions.book', $competition))->post(route('competitions.book.store', $competition), [
@@ -160,17 +165,88 @@ class CompetitionRegistrationTest extends TestCase
             'entrant_name' => 'Taken',
             'email' => 't@example.com',
             'telephone' => '0',
+            'party_size' => 1,
         ]);
 
         $response = $this->from(route('competitions.book', $competition))->post(route('competitions.book.store', $competition), [
             'competition_squad_id' => $squadA->id,
-            'cpsa_number' => '200',
-            'entrant_name' => 'Late',
-            'email' => 'late@example.com',
-            'telephone' => '1',
+            'party_size' => 1,
+            'entrants' => [
+                [
+                    'cpsa_number' => '200',
+                    'entrant_name' => 'Late',
+                    'email' => 'late@example.com',
+                    'telephone' => '1',
+                ],
+            ],
         ]);
 
-        $response->assertSessionHasErrors('competition_squad_id');
+        $response->assertSessionHasErrors('party_size');
+    }
+
+    public function test_squadded_booking_party_size_reserves_multiple_places(): void
+    {
+        Mail::fake();
+        ['competition' => $competition, 'squads' => $squads] = $this->seedGroundOwnerCompetition(true);
+        $squadB = $squads->last();
+
+        $this->post(route('competitions.book.store', $competition), [
+            'competition_squad_id' => $squadB->id,
+            'party_size' => 3,
+            'entrants' => [
+                [
+                    'cpsa_number' => '300',
+                    'entrant_name' => 'Party Lead',
+                    'email' => 'party@example.com',
+                    'telephone' => '07700900000',
+                ],
+                ['cpsa_number' => '301', 'entrant_name' => 'Guest Two'],
+                ['cpsa_number' => '302', 'entrant_name' => 'Guest Three'],
+            ],
+        ])->assertRedirect(route('competitions.show', $competition));
+
+        $this->assertSame(3, CompetitionRegistration::query()->where('competition_id', $competition->id)->where('competition_squad_id', $squadB->id)->count());
+        foreach (['300', '301', '302'] as $cpsa) {
+            $this->assertDatabaseHas('competition_registrations', [
+                'competition_id' => $competition->id,
+                'competition_squad_id' => $squadB->id,
+                'party_size' => 1,
+                'cpsa_number' => $cpsa,
+            ]);
+        }
+
+        Mail::assertSent(CompetitionNewRegistrationMail::class, function (CompetitionNewRegistrationMail $mail) {
+            return $mail->registrations->count() === 3;
+        });
+
+        $this->post(route('competitions.book.store', $competition), [
+            'competition_squad_id' => $squadB->id,
+            'party_size' => 4,
+            'entrants' => [
+                ['cpsa_number' => '400', 'entrant_name' => 'A', 'email' => 'big@example.com', 'telephone' => '07700900001'],
+                ['cpsa_number' => '401', 'entrant_name' => 'B'],
+                ['cpsa_number' => '402', 'entrant_name' => 'C'],
+                ['cpsa_number' => '403', 'entrant_name' => 'D'],
+            ],
+        ])->assertSessionHasErrors('party_size');
+    }
+
+    public function test_squadded_booking_rejects_duplicate_cpsa_within_party(): void
+    {
+        ['competition' => $competition, 'squads' => $squads] = $this->seedGroundOwnerCompetition(true);
+        $squadB = $squads->last();
+
+        $response = $this->from(route('competitions.book', $competition))->post(route('competitions.book.store', $competition), [
+            'competition_squad_id' => $squadB->id,
+            'party_size' => 2,
+            'entrants' => [
+                ['cpsa_number' => '500', 'entrant_name' => 'A', 'email' => 'a@example.com', 'telephone' => '01'],
+                ['cpsa_number' => '500', 'entrant_name' => 'B'],
+            ],
+        ]);
+
+        $response->assertSessionHasErrors('entrants');
+        $this->assertSame(0, CompetitionRegistration::query()->where('competition_id', $competition->id)->where('cpsa_number', '500')->count());
     }
 
     public function test_owner_can_view_registrations_list(): void
@@ -183,6 +259,7 @@ class CompetitionRegistrationTest extends TestCase
             'entrant_name' => 'Pat',
             'email' => 'pat@example.com',
             'telephone' => '99',
+            'party_size' => 1,
         ]);
 
         $response = $this->actingAs($owner)->get(

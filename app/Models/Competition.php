@@ -129,8 +129,8 @@ class Competition extends Model
             return false;
         }
 
-        return $this->squads()->withCount('registrations')->get()->contains(
-            fn (CompetitionSquad $s) => (int) $s->registrations_count < $s->capacity()
+        return $this->squads()->withSum('registrations', 'party_size')->get()->contains(
+            fn (CompetitionSquad $s) => (int) ($s->registrations_sum_party_size ?? 0) < $s->capacity()
         );
     }
 }

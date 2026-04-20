@@ -9,6 +9,7 @@ use App\Models\CompetitionSquad;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
@@ -24,7 +25,7 @@ class CompetitionRegistrationController extends Controller
                 ->with('status', __('Online registration is not available for this event.'));
         }
 
-        $competition->load(['shootingGround', 'squads' => fn ($q) => $q->withCount('registrations')]);
+        $competition->load(['shootingGround', 'squads' => fn ($q) => $q->withSum('registrations', 'party_size')]);
 
         $squads = $competition->registration_format === Competition::REGISTRATION_SQUADDED
             ? $competition->squads
@@ -50,23 +51,41 @@ class CompetitionRegistrationController extends Controller
                 ->with('status', __('Online registration is not available for this event.'));
         }
 
-        $rules = [
-            'cpsa_number' => ['required', 'string', 'max:64'],
-            'entrant_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'telephone' => ['required', 'string', 'max:64'],
-        ];
-
-        if ($competition->registration_format === Competition::REGISTRATION_SQUADDED) {
-            $rules['competition_squad_id'] = ['required', 'integer', 'exists:competition_squads,id'];
-        }
+        $rules = $competition->registration_format === Competition::REGISTRATION_OPEN
+            ? [
+                'cpsa_number' => ['required', 'string', 'max:64'],
+                'entrant_name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'email', 'max:255'],
+                'telephone' => ['required', 'string', 'max:64'],
+            ]
+            : [
+                'competition_squad_id' => ['required', 'integer', 'exists:competition_squads,id'],
+                'party_size' => ['required', 'integer', 'min:1', 'max:12'],
+                'entrants' => ['required', 'array', 'min:1', 'max:12'],
+                'entrants.*.cpsa_number' => ['required', 'string', 'max:64'],
+                'entrants.*.entrant_name' => ['required', 'string', 'max:255'],
+                'entrants.0.email' => ['required', 'email', 'max:255'],
+                'entrants.0.telephone' => ['required', 'string', 'max:64'],
+            ];
 
         $validated = $request->validate($rules);
 
-        $cpsa = trim($validated['cpsa_number']);
+        if ($competition->registration_format === Competition::REGISTRATION_SQUADDED) {
+            $partySize = (int) $validated['party_size'];
+            if (count($validated['entrants']) !== $partySize) {
+                throw ValidationException::withMessages([
+                    'party_size' => __('Add one entry for each person you selected.'),
+                ]);
+            }
+        }
+
+        $cpsa = $competition->registration_format === Competition::REGISTRATION_OPEN
+            ? trim($validated['cpsa_number'])
+            : null;
 
         try {
-            $registration = DB::transaction(function () use ($competition, $validated, $cpsa) {
+            /** @var Collection<int, CompetitionRegistration> $registrations */
+            $registrations = DB::transaction(function () use ($competition, $validated, $cpsa) {
                 Competition::query()->whereKey($competition->id)->lockForUpdate()->firstOrFail();
 
                 if ($competition->registration_format === Competition::REGISTRATION_OPEN) {
@@ -92,14 +111,17 @@ class CompetitionRegistrationController extends Controller
                         ]);
                     }
 
-                    return CompetitionRegistration::query()->create([
+                    $row = CompetitionRegistration::query()->create([
                         'competition_id' => $competition->id,
                         'competition_squad_id' => null,
                         'cpsa_number' => $cpsa,
                         'entrant_name' => $validated['entrant_name'],
                         'email' => $validated['email'],
                         'telephone' => $validated['telephone'],
+                        'party_size' => 1,
                     ]);
+
+                    return collect([$row]);
                 }
 
                 /** @var int $squadId */
@@ -115,47 +137,85 @@ class CompetitionRegistrationController extends Controller
                 $squad->refresh();
                 $squadCap = $squad->capacity();
 
-                $used = $squad->registrations()->lockForUpdate()->count();
-                if ($used >= $squadCap) {
+                $used = (int) $squad->registrations()->lockForUpdate()->sum('party_size');
+                $partySize = (int) $validated['party_size'];
+                if ($partySize < 1 || $partySize > $squadCap) {
                     throw ValidationException::withMessages([
-                        'competition_squad_id' => __('That squad is full. Please choose another.'),
+                        'party_size' => __('Choose between 1 and :max people for this squad.', ['max' => $squadCap]),
+                    ]);
+                }
+                if ($used + $partySize > $squadCap) {
+                    throw ValidationException::withMessages([
+                        'party_size' => __('Only :free place(s) left in that squad.', ['free' => max(0, $squadCap - $used)]),
                     ]);
                 }
 
-                if (CompetitionRegistration::query()
+                $entrants = $validated['entrants'];
+                $cpsaNumbers = [];
+                foreach ($entrants as $i => $entrant) {
+                    $cpsaNumbers[$i] = trim($entrant['cpsa_number']);
+                }
+                if (count($cpsaNumbers) !== count(array_unique($cpsaNumbers))) {
+                    throw ValidationException::withMessages([
+                        'entrants' => __('Each person must have a different CPSA number.'),
+                    ]);
+                }
+
+                $existing = CompetitionRegistration::query()
                     ->where('competition_id', $competition->id)
-                    ->where('cpsa_number', $cpsa)
+                    ->whereIn('cpsa_number', $cpsaNumbers)
                     ->lockForUpdate()
-                    ->exists()) {
+                    ->pluck('cpsa_number')
+                    ->all();
+                if ($existing !== []) {
                     throw ValidationException::withMessages([
-                        'cpsa_number' => __('This CPSA number is already registered for this event.'),
+                        'entrants' => __('One or more CPSA numbers are already registered for this event: :list.', [
+                            'list' => implode(', ', $existing),
+                        ]),
                     ]);
                 }
 
-                return CompetitionRegistration::query()->create([
-                    'competition_id' => $competition->id,
-                    'competition_squad_id' => $squad->id,
-                    'cpsa_number' => $cpsa,
-                    'entrant_name' => $validated['entrant_name'],
-                    'email' => $validated['email'],
-                    'telephone' => $validated['telephone'],
-                ]);
+                $email = $entrants[0]['email'];
+                $telephone = $entrants[0]['telephone'];
+                $created = collect();
+
+                foreach ($entrants as $entrant) {
+                    $created->push(CompetitionRegistration::query()->create([
+                        'competition_id' => $competition->id,
+                        'competition_squad_id' => $squad->id,
+                        'cpsa_number' => trim($entrant['cpsa_number']),
+                        'entrant_name' => $entrant['entrant_name'],
+                        'email' => $email,
+                        'telephone' => $telephone,
+                        'party_size' => 1,
+                    ]));
+                }
+
+                return $created;
             });
         } catch (QueryException $e) {
             if ($e->getCode() === '23000' || str_contains($e->getMessage(), 'UNIQUE constraint failed') || str_contains($e->getMessage(), 'Duplicate entry')) {
+                $duplicateKey = $competition->registration_format === Competition::REGISTRATION_SQUADDED
+                    ? 'entrants'
+                    : 'cpsa_number';
+
                 return back()
                     ->withInput()
-                    ->withErrors(['cpsa_number' => __('This CPSA number is already registered for this event.')]);
+                    ->withErrors([
+                        $duplicateKey => __('This CPSA number is already registered for this event.'),
+                    ]);
             }
             throw $e;
         }
+
+        $registrations->each->load('squad');
 
         $competition->load(['shootingGround.owners']);
         $owners = $competition->shootingGround->owners->filter(fn ($u) => $u->email_verified_at !== null);
         foreach ($owners as $owner) {
             Mail::to($owner->email)->send(new CompetitionNewRegistrationMail(
                 $competition->fresh(['shootingGround']),
-                $registration->load('squad'),
+                $registrations,
             ));
         }
 

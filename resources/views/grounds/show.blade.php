@@ -11,74 +11,87 @@
         <div class="pointer-events-none absolute -left-32 top-20 h-96 w-96 rounded-full bg-tsl-primary/[0.04] blur-3xl" aria-hidden="true"></div>
         <div class="pointer-events-none absolute -right-24 bottom-40 h-80 w-80 rounded-full bg-tsl-tertiary/[0.06] blur-3xl" aria-hidden="true"></div>
 
-        <div class="relative mx-auto max-w-3xl px-4 py-10 sm:px-8 sm:py-12 lg:max-w-4xl">
-            <nav class="mb-10 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" aria-label="Breadcrumb">
-                <a href="{{ route('grounds.index') }}" class="font-semibold text-tsl-primary underline decoration-tsl-outline-variant underline-offset-4 transition hover:text-tsl-tertiary">← Directory</a>
-                <span class="text-tsl-outline" aria-hidden="true">·</span>
-                <span class="text-tsl-secondary">{{ $ground->county ?: 'United Kingdom' }}</span>
+        <div class="relative mx-auto max-w-6xl px-4 py-10 sm:px-8 sm:py-12 xl:max-w-7xl">
+            <nav class="mb-10 text-sm" aria-label="Breadcrumb">
+                <a
+                    href="{{ route('grounds.index', $ground->county ? ['q' => $ground->county] : []) }}"
+                    class="font-semibold text-tsl-primary underline decoration-tsl-outline-variant underline-offset-4 transition hover:text-tsl-tertiary"
+                >
+                    ← {{ __('Shooting grounds in :county', ['county' => $ground->county ?: __('United Kingdom')]) }}
+                </a>
             </nav>
 
             <article>
                 <div class="mb-8 overflow-hidden rounded-2xl bg-tsl-surface-container ring-1 ring-tsl-outline-variant/40">
-                    <div class="aspect-[21/9] max-h-[320px] sm:aspect-[2/1]">
+                    <div class="relative aspect-[21/9] w-full sm:aspect-[2/1]">
                         <img
                             src="{{ $ground->coverPhotoUrl() }}"
                             alt="{{ $ground->name }}"
-                            class="size-full object-cover"
+                            class="absolute inset-0 h-full w-full object-cover"
                             fetchpriority="high"
                         >
                     </div>
                 </div>
 
-                <header class="mb-6">
-                    <div class="mb-3 flex items-center gap-2">
-                        <span class="size-1.5 shrink-0 rounded-full bg-tsl-tertiary" aria-hidden="true"></span>
-                        <p class="text-[11px] font-bold tracking-[0.15em] text-tsl-secondary uppercase">Shooting ground</p>
-                    </div>
-                    <h1 class="font-tsl-headline text-4xl font-bold tracking-tight text-tsl-primary md:text-5xl">{{ $ground->name }}</h1>
-                </header>
+                @php
+                    $hasOpeningHours = $ground->hasStructuredWeeklyHours() || filled($ground->opening_hours);
+                    $showClaimCta = ($ground->owners_count ?? 0) === 0;
+                    $hasSidebar = $weather !== null || $hasOpeningHours || $showClaimCta;
+                @endphp
 
-            @if ($ground->full_address || $ground->postcode)
-                <p class="mt-2 text-lg leading-relaxed text-tsl-secondary">
-                    @if ($ground->full_address)
-                        {{ $ground->full_address }}
-                    @endif
-                    @if ($ground->postcode && $ground->full_address && ! str_contains($ground->full_address, $ground->postcode))
-                        <br><span class="text-tsl-outline">{{ $ground->postcode }}</span>
-                    @elseif ($ground->postcode)
-                        {{ $ground->postcode }}
-                    @endif
-                </p>
-            @endif
+                <div class="@if ($hasSidebar) grid gap-10 lg:grid-cols-12 lg:gap-10 xl:gap-12 lg:items-start @else space-y-8 @endif">
+                    @if ($hasSidebar)
+                        <div class="min-w-0 space-y-6 lg:col-span-8">
+                            @include('grounds.show._lead')
+                        </div>
 
-            @if ($ground->hasStructuredWeeklyHours() || $ground->opening_hours)
-                <div class="mt-8 rounded-xl border border-tsl-outline-variant/40 bg-tsl-surface-container-low px-5 py-5 shadow-sm">
-                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Opening hours</h2>
-                    @if ($ground->hasStructuredWeeklyHours())
-                        @php $oh = $ground->openingHours; @endphp
-                        <dl class="mt-4 space-y-2 text-sm text-tsl-on-surface">
-                            @foreach (\App\Models\OpeningHours::WEEKDAY_LABELS as $iso => $label)
-                                @php
-                                    $prefix = \App\Models\ShootingGround::DAY_PREFIXES[(int) $iso - 1] ?? null;
-                                    $o = $prefix ? $oh?->{$prefix.'_opens_at'} : null;
-                                    $c = $prefix ? $oh?->{$prefix.'_closes_at'} : null;
-                                    $isToday = (int) $iso === now()->dayOfWeekIso;
-                                @endphp
-                                <div class="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
-                                    <dt class="shrink-0 sm:w-28 {{ $isToday ? 'font-bold text-tsl-primary' : 'font-medium text-tsl-secondary' }}">{{ $label }}</dt>
-                                    <dd class="leading-relaxed {{ $isToday ? 'font-semibold text-tsl-on-surface' : '' }}">
-                                        @if ($o && $c)
-                                            <span>{{ $o->format('g:ia') }}–{{ $c->format('g:ia') }}</span>
-                                        @else
-                                            <span class="{{ $isToday ? 'text-tsl-on-surface' : 'text-tsl-outline' }}">Closed</span>
-                                        @endif
-                                    </dd>
+                        <aside class="lg:col-span-4 lg:row-span-2 lg:sticky lg:top-28 lg:self-start space-y-6" aria-label="{{ __('At a glance') }}">
+                            @include('grounds.show._opening-hours')
+
+                            @if ($weather !== null)
+                                <div class="overflow-hidden rounded-2xl border border-tsl-outline-variant/40 bg-gradient-to-br from-tsl-surface-container-low via-tsl-surface-container-lowest to-tsl-surface-container px-5 py-5 shadow-sm ring-1 ring-tsl-outline-variant/30">
+                                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Weather now</h2>
+                                    <p class="mt-1 text-xs text-tsl-secondary">At this location · updates every ~15 minutes</p>
+                                    <div class="mt-4 flex items-baseline gap-2">
+                                        <span class="font-tsl-headline text-4xl font-semibold tabular-nums text-tsl-primary">{{ $weather['temp_c'] }}°</span>
+                                        <span class="text-lg font-medium text-tsl-secondary">C</span>
+                                    </div>
+                                    <p class="mt-3 text-sm font-medium text-tsl-on-surface">{{ $weather['summary'] }}</p>
+                                    <p class="mt-2 text-sm text-tsl-secondary">
+                                        Wind {{ $weather['wind_mph'] }} mph from {{ $weather['wind_from'] }}
+                                    </p>
+                                    <p class="mt-4 text-[11px] leading-relaxed text-tsl-outline">
+                                        <a href="https://open-meteo.com/" class="font-medium text-tsl-secondary underline decoration-tsl-outline-variant underline-offset-2 hover:text-tsl-primary" target="_blank" rel="noopener noreferrer">Weather data: Open-Meteo</a>
+                                        (non-commercial use)
+                                    </p>
                                 </div>
-                            @endforeach
-                        </dl>
+                            @endif
+
+                            @if ($showClaimCta)
+                                <div class="rounded-xl border border-dashed border-tsl-outline-variant bg-tsl-surface-container-low px-5 py-5">
+                                    <p class="text-sm leading-relaxed text-tsl-secondary">
+                                        {{ __('Run this ground? Take over the listing to update hours, events, and details.') }}
+                                    </p>
+                                    <a
+                                        href="{{ route('contact', ['claim' => $ground->slug]) }}"
+                                        class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-tsl-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-tsl-primary-container"
+                                    >
+                                        {{ __('Claim this ground') }}
+                                    </a>
+                                </div>
+                            @endif
+                        </aside>
                     @else
-                        <div class="mt-3 whitespace-pre-line text-sm leading-relaxed text-tsl-secondary">{{ $ground->opening_hours }}</div>
+                        <div class="space-y-6">
+                            @include('grounds.show._lead')
+                        </div>
                     @endif
+
+                    <div class="min-w-0 space-y-8 @if ($hasSidebar) lg:col-span-8 @endif">
+            @if ($ground->description)
+                <div>
+                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">About</h2>
+                    <p class="mt-4 whitespace-pre-wrap text-base leading-relaxed text-tsl-secondary">{{ $ground->description }}</p>
                 </div>
             @endif
 
@@ -98,30 +111,7 @@
                     $osmEmbedSrc = 'https://www.openstreetmap.org/export/embed.html?bbox='.rawurlencode($embedBbox).'&layer=mapnik&marker='.rawurlencode($embedMarker);
                 @endphp
 
-                @if ($weather ?? null)
-                    <div class="mt-8 overflow-hidden rounded-2xl border border-tsl-outline-variant/40 bg-gradient-to-br from-tsl-surface-container-low via-tsl-surface-container-lowest to-tsl-surface-container px-5 py-5 shadow-sm ring-1 ring-tsl-outline-variant/30">
-                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Weather now</h2>
-                                <p class="mt-1 text-xs text-tsl-secondary">At this location · updates every ~15 minutes</p>
-                            </div>
-                            <div class="flex flex-wrap items-baseline gap-2 sm:justify-end">
-                                <span class="font-tsl-headline text-4xl font-semibold tabular-nums text-tsl-primary">{{ $weather['temp_c'] }}°</span>
-                                <span class="text-lg font-medium text-tsl-secondary">C</span>
-                            </div>
-                        </div>
-                        <p class="mt-3 text-sm font-medium text-tsl-on-surface">{{ $weather['summary'] }}</p>
-                        <p class="mt-2 text-sm text-tsl-secondary">
-                            Wind {{ $weather['wind_mph'] }} mph from {{ $weather['wind_from'] }}
-                        </p>
-                        <p class="mt-4 text-[11px] leading-relaxed text-tsl-outline">
-                            <a href="https://open-meteo.com/" class="font-medium text-tsl-secondary underline decoration-tsl-outline-variant underline-offset-2 hover:text-tsl-primary" target="_blank" rel="noopener noreferrer">Weather data: Open-Meteo</a>
-                            (non-commercial use)
-                        </p>
-                    </div>
-                @endif
-
-                <div class="mt-8">
+                <div>
                     <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">Map</h2>
                     <div class="mt-3 overflow-hidden rounded-2xl bg-tsl-surface-container ring-1 ring-tsl-outline-variant/40">
                         <iframe
@@ -154,7 +144,7 @@
                 </div>
             @endif
 
-            <div class="mt-8 flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2">
                 @if ($ground->has_practice)
                     <span class="rounded-full bg-tsl-primary-container/15 px-3 py-1 text-xs font-semibold text-tsl-primary ring-1 ring-tsl-outline-variant/50">Practice</span>
                 @endif
@@ -259,13 +249,6 @@
                 @endif
             </section>
 
-            @if ($ground->description)
-                <div class="mt-10 border-t border-tsl-outline-variant/40 pt-8">
-                    <h2 class="font-tsl-headline text-lg font-semibold text-tsl-primary">About</h2>
-                    <p class="mt-4 whitespace-pre-wrap text-base leading-relaxed text-tsl-secondary">{{ $ground->description }}</p>
-                </div>
-            @endif
-
             <dl class="mt-10 space-y-6 border-t border-tsl-outline-variant/40 pt-8">
                 @if ($ground->practice_notes || $ground->has_practice)
                     <div>
@@ -366,6 +349,8 @@
                     Competitions calendar
                 </a>
             </div>
+                    </div>
+                </div>
         </article>
         </div>
     </div>

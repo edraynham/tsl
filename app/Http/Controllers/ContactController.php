@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ContactMessageMail;
 use App\Models\Instructor;
+use App\Models\ShootingGround;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -12,9 +13,15 @@ use Illuminate\View\View;
 
 class ContactController extends Controller
 {
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('contact');
+        $claimGround = null;
+        $claimSlug = $request->query('claim');
+        if (is_string($claimSlug) && $claimSlug !== '') {
+            $claimGround = ShootingGround::query()->where('slug', $claimSlug)->first();
+        }
+
+        return view('contact', compact('claimGround'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -23,9 +30,15 @@ class ContactController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:40'],
-            'subject' => ['nullable', 'string', 'max:180', Rule::requiredIf(fn () => ! $request->filled('instructor_slug'))],
+            'subject' => [
+                'nullable',
+                'string',
+                'max:180',
+                Rule::requiredIf(fn () => ! $request->filled('instructor_slug') && ! $request->filled('ground_slug')),
+            ],
             'message' => ['required', 'string', 'max:10000'],
             'instructor_slug' => ['nullable', 'string', Rule::exists('instructors', 'slug')],
+            'ground_slug' => ['nullable', 'string', Rule::exists('shooting_grounds', 'slug')],
             'skill_level' => [
                 'nullable',
                 Rule::requiredIf(fn () => $request->filled('instructor_slug')),
@@ -62,6 +75,15 @@ class ContactController extends Controller
                     $bodyText = __('Skill level').': '.$skillLevelLabels[$skill]."\n\n".$bodyText;
                 }
                 $bodyText .= "\n\n---\n".__('This enquiry was sent from the instructor profile:')."\n".route('instructors.show', $instructor);
+            }
+        }
+
+        if (! empty($validated['ground_slug'])) {
+            $claimGround = ShootingGround::query()->where('slug', $validated['ground_slug'])->first();
+            if ($claimGround !== null) {
+                $claimSubject = $subjectLine === '' ? __('Listing claim') : $subjectLine;
+                $subjectLine = '[Claim ground: '.$claimGround->name.'] '.$claimSubject;
+                $bodyText .= "\n\n---\n".__('Ground listing:').' '.$claimGround->name."\n".route('grounds.show', $claimGround);
             }
         }
 

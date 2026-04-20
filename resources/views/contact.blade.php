@@ -16,6 +16,18 @@
                 Questions about the directory, listings, or your account? Send us a message and we’ll reply by email.
             </p>
 
+            @if ($claimGround ?? null)
+                <div class="mt-6 rounded-xl border border-stone-200 bg-white px-4 py-4 text-sm leading-relaxed text-stone-700 shadow-sm">
+                    <p>
+                        {{ __('You’re contacting us about claiming the listing for') }}
+                        <span class="font-semibold text-stone-900">{{ $claimGround->name }}</span>.
+                    </p>
+                    <p class="mt-2">
+                        <a href="{{ route('grounds.show', $claimGround) }}" class="font-medium text-forest underline decoration-forest/30 underline-offset-2 hover:text-forest-light">← {{ __('Back to ground page') }}</a>
+                    </p>
+                </div>
+            @endif
+
             @if (session('status'))
                 <div class="mt-8 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900" role="status">
                     {{ session('status') }}
@@ -24,6 +36,9 @@
 
             <form method="post" action="{{ route('contact.store') }}" class="mt-10 space-y-5">
                 @csrf
+                @if ($claimGround ?? null)
+                    <input type="hidden" name="ground_slug" value="{{ $claimGround->slug }}">
+                @endif
                 <div>
                     <label for="contact-name" class="block text-sm font-medium text-stone-700">Name</label>
                     <input
@@ -69,13 +84,18 @@
                     @enderror
                 </div>
                 <div>
-                    <label for="contact-subject" class="block text-sm font-medium text-stone-700">Subject</label>
+                    <label for="contact-subject" class="block text-sm font-medium text-stone-700">
+                        Subject
+                        @if ($claimGround ?? null)
+                            <span class="font-normal text-stone-500">({{ __('optional') }})</span>
+                        @endif
+                    </label>
                     <input
                         type="text"
                         name="subject"
                         id="contact-subject"
                         value="{{ old('subject') }}"
-                        required
+                        @if (! ($claimGround ?? null)) required @endif
                         maxlength="180"
                         class="mt-1 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
                     >

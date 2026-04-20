@@ -125,6 +125,7 @@ class ShootingGroundController extends Controller
     public function show(ShootingGround $shooting_ground): View
     {
         $shooting_ground->load(['openingHours', 'disciplines', 'facilities']);
+        $shooting_ground->loadCount('owners');
 
         $competitions = $shooting_ground->competitions()
             ->with('canonicalDiscipline')

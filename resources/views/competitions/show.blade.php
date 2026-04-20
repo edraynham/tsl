@@ -71,6 +71,32 @@
                 @endif
             </div>
 
+            @if ($eventWeather ?? null)
+                <div class="mt-6 overflow-hidden rounded-xl border border-sky-200/80 bg-gradient-to-br from-sky-50 via-white to-cream-dark/40 px-5 py-5 shadow-sm ring-1 ring-sky-100/80">
+                    <h2 class="text-sm font-semibold text-forest">Weather at the ground</h2>
+                    <p class="mt-1 text-xs text-stone-500">
+                        {{ $eventWeather['is_forecast'] ? __('Forecast') : __('Historical') }}
+                        · {{ __('Hour closest to event start') }} ({{ $competition->starts_at->timezone('Europe/London')->format('l j F Y, g:ia') }})
+                    </p>
+                    <div class="mt-4 flex flex-wrap items-baseline gap-2">
+                        <span class="font-serif text-4xl font-semibold tabular-nums text-forest">{{ $eventWeather['temp_c'] }}°</span>
+                        <span class="text-lg font-medium text-stone-500">C</span>
+                    </div>
+                    <p class="mt-3 text-sm font-medium text-stone-800">{{ $eventWeather['summary'] }}</p>
+                    <p class="mt-2 text-sm text-stone-600">
+                        {{ __('Wind') }} {{ $eventWeather['wind_mph'] }} {{ __('mph from') }} {{ $eventWeather['wind_from'] }}
+                    </p>
+                    <p class="mt-4 text-[11px] leading-relaxed text-stone-400">
+                        <a href="https://open-meteo.com/" class="font-medium text-stone-500 underline decoration-stone-300 underline-offset-2 hover:text-forest" target="_blank" rel="noopener noreferrer">Weather data: Open-Meteo</a>
+                        @if ($eventWeather['is_forecast'])
+                            ({{ __('forecast') }})
+                        @else
+                            ({{ __('historical archive') }})
+                        @endif
+                    </p>
+                </div>
+            @endif
+
             @php
                 $googleEmbedSrc = null;
                 $googleMapsLink = null;

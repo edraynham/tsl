@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Competition;
 use App\Models\Discipline;
 use App\Support\Geo;
+use App\Support\Weather;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -63,7 +65,7 @@ class CompetitionController extends Controller
             });
         }
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Competition> $competitions */
+        /** @var Collection<int, Competition> $competitions */
         $competitions = $query->orderBy('starts_at')->get();
 
         $sortByDistance = $refLat !== null && $refLng !== null;
@@ -144,9 +146,22 @@ class CompetitionController extends Controller
     {
         $competition->load(['shootingGround', 'canonicalDiscipline']);
 
+        $ground = $competition->shootingGround;
+
+        $eventWeather = null;
+        if ($ground->latitude !== null && $ground->longitude !== null) {
+            $eventWeather = Weather::forGroundAtEventTime(
+                (float) $ground->latitude,
+                (float) $ground->longitude,
+                $competition->starts_at,
+                $competition->id,
+            );
+        }
+
         return view('competitions.show', [
             'competition' => $competition,
-            'ground' => $competition->shootingGround,
+            'ground' => $ground,
+            'eventWeather' => $eventWeather,
         ]);
     }
 }

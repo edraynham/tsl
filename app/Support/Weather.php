@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
@@ -62,6 +64,114 @@ final class Weather
                 }
             }
         );
+    }
+
+    /**
+     * Hourly conditions at the ground for the event day, closest to the event start time.
+     * Uses Open-Meteo forecast for future start times and the archive API for past events.
+     *
+     * @return array{
+     *     temp_c: float,
+     *     summary: string,
+     *     wind_mph: int,
+     *     wind_from: string,
+     *     observed_at: string|null,
+     *     is_forecast: bool,
+     * }|null
+     */
+    public static function forGroundAtEventTime(
+        float $latitude,
+        float $longitude,
+        CarbonInterface $startsAt,
+        int $competitionId,
+    ): ?array {
+        $tz = 'Europe/London';
+        $atLocal = Carbon::parse($startsAt)->timezone($tz);
+
+        $cacheKey = 'weather.competition.'.$competitionId.'.'.$atLocal->format('Y-m-d-Hi');
+        $ttl = $atLocal->isFuture()
+            ? now()->addHours(6)
+            : now()->addDays(30);
+
+        return Cache::remember(
+            $cacheKey,
+            $ttl,
+            function () use ($latitude, $longitude, $atLocal): ?array {
+                $useForecast = $atLocal->isFuture();
+                $url = $useForecast
+                    ? 'https://api.open-meteo.com/v1/forecast'
+                    : 'https://archive-api.open-meteo.com/v1/archive';
+
+                try {
+                    $response = Http::timeout(10)->get($url, [
+                        'latitude' => $latitude,
+                        'longitude' => $longitude,
+                        'hourly' => 'temperature_2m,weather_code,wind_speed_10m,wind_direction_10m',
+                        'start_date' => $atLocal->toDateString(),
+                        'end_date' => $atLocal->toDateString(),
+                        'timezone' => 'Europe/London',
+                        'wind_speed_unit' => 'mph',
+                    ]);
+
+                    if (! $response->successful()) {
+                        return null;
+                    }
+
+                    $hourly = $response->json('hourly');
+                    if (! is_array($hourly)) {
+                        return null;
+                    }
+
+                    $times = $hourly['time'] ?? null;
+                    if (! is_array($times) || $times === []) {
+                        return null;
+                    }
+
+                    $idx = self::closestHourlyIndex($times, $atLocal);
+                    $temp = $hourly['temperature_2m'][$idx] ?? null;
+                    if (! is_numeric($temp)) {
+                        return null;
+                    }
+
+                    $windDeg = (float) ($hourly['wind_direction_10m'][$idx] ?? 0);
+                    $windSpeed = (float) ($hourly['wind_speed_10m'][$idx] ?? 0);
+                    $timeStr = is_string($times[$idx] ?? null) ? $times[$idx] : null;
+
+                    return [
+                        'temp_c' => round((float) $temp, 1),
+                        'summary' => self::weatherCodeLabel((int) ($hourly['weather_code'][$idx] ?? -1)),
+                        'wind_mph' => (int) round($windSpeed),
+                        'wind_from' => self::compassFromDegrees($windDeg),
+                        'observed_at' => $timeStr,
+                        'is_forecast' => $useForecast,
+                    ];
+                } catch (\Throwable) {
+                    return null;
+                }
+            }
+        );
+    }
+
+    /**
+     * @param  list<string|mixed>  $times
+     */
+    private static function closestHourlyIndex(array $times, Carbon $target): int
+    {
+        $bestIdx = 0;
+        $bestDiff = PHP_INT_MAX;
+        foreach ($times as $i => $t) {
+            if (! is_string($t)) {
+                continue;
+            }
+            $ts = Carbon::parse($t, 'Europe/London');
+            $diff = abs($ts->diffInSeconds($target));
+            if ($diff < $bestDiff) {
+                $bestDiff = $diff;
+                $bestIdx = (int) $i;
+            }
+        }
+
+        return $bestIdx;
     }
 
     private static function weatherCodeLabel(int $code): string

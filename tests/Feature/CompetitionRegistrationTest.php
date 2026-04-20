@@ -81,7 +81,6 @@ class CompetitionRegistrationTest extends TestCase
             'competition_id' => $competition->id,
             'competition_squad_id' => null,
             'cpsa_number' => '12345',
-            'party_size' => 1,
         ]);
 
         Mail::assertSent(CompetitionNewRegistrationMail::class, function (CompetitionNewRegistrationMail $mail) use ($owner, $competition) {
@@ -103,7 +102,6 @@ class CompetitionRegistrationTest extends TestCase
             'entrant_name' => 'Existing',
             'email' => 'ex@example.com',
             'telephone' => '07000000000',
-            'party_size' => 1,
         ]);
 
         $response = $this->from(route('competitions.book', $competition))->post(route('competitions.book.store', $competition), [
@@ -129,7 +127,6 @@ class CompetitionRegistrationTest extends TestCase
             'entrant_name' => 'A',
             'email' => 'a@example.com',
             'telephone' => '01',
-            'party_size' => 1,
         ]);
         CompetitionRegistration::query()->create([
             'competition_id' => $competition->id,
@@ -138,7 +135,6 @@ class CompetitionRegistrationTest extends TestCase
             'entrant_name' => 'B',
             'email' => 'b@example.com',
             'telephone' => '02',
-            'party_size' => 1,
         ]);
 
         $response = $this->from(route('competitions.book', $competition))->post(route('competitions.book.store', $competition), [
@@ -165,7 +161,6 @@ class CompetitionRegistrationTest extends TestCase
             'entrant_name' => 'Taken',
             'email' => 't@example.com',
             'telephone' => '0',
-            'party_size' => 1,
         ]);
 
         $response = $this->from(route('competitions.book', $competition))->post(route('competitions.book.store', $competition), [
@@ -210,7 +205,6 @@ class CompetitionRegistrationTest extends TestCase
             $this->assertDatabaseHas('competition_registrations', [
                 'competition_id' => $competition->id,
                 'competition_squad_id' => $squadB->id,
-                'party_size' => 1,
                 'cpsa_number' => $cpsa,
             ]);
         }
@@ -259,7 +253,6 @@ class CompetitionRegistrationTest extends TestCase
             'entrant_name' => 'Pat',
             'email' => 'pat@example.com',
             'telephone' => '99',
-            'party_size' => 1,
         ]);
 
         $response = $this->actingAs($owner)->get(

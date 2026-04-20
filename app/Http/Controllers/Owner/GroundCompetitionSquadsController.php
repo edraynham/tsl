@@ -135,7 +135,6 @@ class GroundCompetitionSquadsController extends Controller
 
         $existing = $competition->squads()
             ->withCount('registrations')
-            ->withSum('registrations', 'party_size')
             ->get()
             ->keyBy('id');
 
@@ -143,7 +142,7 @@ class GroundCompetitionSquadsController extends Controller
             $max = max(1, min(12, (int) ($row['max_participants'] ?? 6)));
             if (! empty($row['id'])) {
                 $squad = $existing->get((int) $row['id']);
-                $placesTaken = (int) ($squad?->registrations_sum_party_size ?? 0);
+                $placesTaken = (int) ($squad?->registrations_count ?? 0);
                 if ($squad !== null && $max < $placesTaken) {
                     throw ValidationException::withMessages([
                         'squads.'.$i.'.max_participants' => __('Cannot be less than the number of people already booked in this squad (:n).', ['n' => $placesTaken]),

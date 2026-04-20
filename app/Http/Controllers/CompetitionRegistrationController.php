@@ -25,7 +25,7 @@ class CompetitionRegistrationController extends Controller
                 ->with('status', __('Online registration is not available for this event.'));
         }
 
-        $competition->load(['shootingGround', 'squads' => fn ($q) => $q->withSum('registrations', 'party_size')]);
+        $competition->load(['shootingGround', 'squads' => fn ($q) => $q->withCount('registrations')]);
 
         $squads = $competition->registration_format === Competition::REGISTRATION_SQUADDED
             ? $competition->squads
@@ -118,7 +118,6 @@ class CompetitionRegistrationController extends Controller
                         'entrant_name' => $validated['entrant_name'],
                         'email' => $validated['email'],
                         'telephone' => $validated['telephone'],
-                        'party_size' => 1,
                     ]);
 
                     return collect([$row]);
@@ -137,7 +136,7 @@ class CompetitionRegistrationController extends Controller
                 $squad->refresh();
                 $squadCap = $squad->capacity();
 
-                $used = (int) $squad->registrations()->lockForUpdate()->sum('party_size');
+                $used = (int) $squad->registrations()->lockForUpdate()->count();
                 $partySize = (int) $validated['party_size'];
                 if ($partySize < 1 || $partySize > $squadCap) {
                     throw ValidationException::withMessages([
@@ -187,7 +186,6 @@ class CompetitionRegistrationController extends Controller
                         'entrant_name' => $entrant['entrant_name'],
                         'email' => $email,
                         'telephone' => $telephone,
-                        'party_size' => 1,
                     ]));
                 }
 

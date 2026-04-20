@@ -21,7 +21,7 @@
         <tbody class="divide-y divide-stone-100 text-stone-800">
             @foreach ($squads as $squad)
                 @php
-                    $taken = (int) ($squad->registrations_sum_party_size ?? 0);
+                    $taken = (int) ($squad->registrations_count ?? 0);
                     $cap = $squad->capacity();
                     $squadPct = $cap > 0 ? min(100, (int) round(100 * $taken / $cap)) : 0;
                     $full = $taken >= $cap;
@@ -65,28 +65,33 @@
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap align-middle">{{ $squad->starts_at->timezone('Europe/London')->format('D j M, g:ia') }}</td>
                     <td class="px-4 py-3 align-middle">
-                        @if ($full && $interactive)
-                            <p class="mb-2 text-xs font-medium text-red-800">{{ __('Full') }}</p>
-                        @endif
-                        @php $squadPlacesId = 'book-squad-places-'.$squad->id; @endphp
-                        <div class="max-w-xs" role="group" aria-labelledby="{{ $squadPlacesId }}">
-                            <div class="mb-1.5 flex justify-end">
-                                <span id="{{ $squadPlacesId }}" class="text-xs tabular-nums text-stone-600">{{ $taken }} / {{ $cap }}</span>
-                            </div>
-                            <div
-                                class="h-2 w-full overflow-hidden rounded-full bg-stone-200 shadow-inner"
-                                role="progressbar"
-                                aria-valuemin="0"
-                                aria-valuemax="{{ $cap }}"
-                                aria-valuenow="{{ $taken }}"
-                                aria-labelledby="{{ $squadPlacesId }}"
-                            >
+                        @if ($full)
+                            <p @class([
+                                'text-base font-bold',
+                                'text-red-800' => $interactive,
+                                'text-stone-600' => ! $interactive,
+                            ])>{{ __('Full') }}</p>
+                        @else
+                            @php $squadPlacesId = 'book-squad-places-'.$squad->id; @endphp
+                            <div class="max-w-xs" role="group" aria-labelledby="{{ $squadPlacesId }}">
+                                <div class="mb-1.5 flex justify-end">
+                                    <span id="{{ $squadPlacesId }}" class="text-xs tabular-nums text-stone-600">{{ $taken }} / {{ $cap }}</span>
+                                </div>
                                 <div
-                                    class="h-full min-w-0 rounded-full transition-all {{ $squadPct >= 100 ? 'bg-red-700' : ($squadPct >= 85 ? 'bg-amber-600' : 'bg-forest') }}"
-                                    style="width: {{ $squadPct }}%"
-                                ></div>
+                                    class="h-2 w-full overflow-hidden rounded-full bg-stone-200 shadow-inner"
+                                    role="progressbar"
+                                    aria-valuemin="0"
+                                    aria-valuemax="{{ $cap }}"
+                                    aria-valuenow="{{ $taken }}"
+                                    aria-labelledby="{{ $squadPlacesId }}"
+                                >
+                                    <div
+                                        class="h-full min-w-0 rounded-full transition-all {{ $squadPct >= 85 ? 'bg-amber-600' : 'bg-forest' }}"
+                                        style="width: {{ $squadPct }}%"
+                                    ></div>
+                                </div>
                             </div>
-                        </div>
+                        @endif
                     </td>
                 </tr>
             @endforeach

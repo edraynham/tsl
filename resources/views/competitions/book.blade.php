@@ -117,21 +117,6 @@
                 @endif
                 @if (! $squaddedBook)
                     <div>
-                        <label for="cpsa_number" class="block text-sm font-medium text-stone-700">{{ __('CPSA number') }}</label>
-                        <input
-                            type="text"
-                            name="cpsa_number"
-                            id="cpsa_number"
-                            value="{{ old('cpsa_number') }}"
-                            required
-                            autocomplete="off"
-                            class="mt-1 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
-                        >
-                        @error('cpsa_number')
-                            <p class="mt-1 text-sm text-red-700">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
                         <label for="entrant_name" class="block text-sm font-medium text-stone-700">{{ __('Name') }}</label>
                         <input
                             type="text"
@@ -176,6 +161,21 @@
                             <p class="mt-1 text-sm text-red-700">{{ $message }}</p>
                         @enderror
                     </div>
+                    <div>
+                        <label for="cpsa_number" class="block text-sm font-medium text-stone-700">{{ __('CPSA number') }}</label>
+                        <input
+                            type="text"
+                            name="cpsa_number"
+                            id="cpsa_number"
+                            value="{{ old('cpsa_number') }}"
+                            required
+                            autocomplete="off"
+                            class="mt-1 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
+                        >
+                        @error('cpsa_number')
+                            <p class="mt-1 text-sm text-red-700">{{ $message }}</p>
+                        @enderror
+                    </div>
                 @else
                     @php
                         $oldEntrants = old('entrants', []);
@@ -194,21 +194,6 @@
                                     <legend class="text-base font-semibold text-forest">{{ __('Person :number', ['number' => $i + 1]) }}</legend>
                                 @endif
                                 <div class="mt-4 space-y-4">
-                                    <div>
-                                        <label for="entrant_{{ $i }}_cpsa_number" class="block text-sm font-medium text-stone-700">{{ __('CPSA number') }}</label>
-                                        <input
-                                            type="text"
-                                            name="entrants[{{ $i }}][cpsa_number]"
-                                            id="entrant_{{ $i }}_cpsa_number"
-                                            value="{{ $oldEntrants[$i]['cpsa_number'] ?? '' }}"
-                                            autocomplete="off"
-                                            @disabled($i >= $visibleEntrants)
-                                            class="book-entrant-input mt-1 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
-                                        >
-                                        @error('entrants.'.$i.'.cpsa_number')
-                                            <p class="mt-1 text-sm text-red-700">{{ $message }}</p>
-                                        @enderror
-                                    </div>
                                     <div>
                                         <label for="entrant_{{ $i }}_entrant_name" class="block text-sm font-medium text-stone-700">{{ __('Name') }}</label>
                                         <input
@@ -254,6 +239,21 @@
                                             @enderror
                                         </div>
                                     @endif
+                                    <div>
+                                        <label for="entrant_{{ $i }}_cpsa_number" class="block text-sm font-medium text-stone-700">{{ __('CPSA number') }}</label>
+                                        <input
+                                            type="text"
+                                            name="entrants[{{ $i }}][cpsa_number]"
+                                            id="entrant_{{ $i }}_cpsa_number"
+                                            value="{{ $oldEntrants[$i]['cpsa_number'] ?? '' }}"
+                                            autocomplete="off"
+                                            @disabled($i >= $visibleEntrants)
+                                            class="book-entrant-input mt-1 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-stone-800 shadow-sm focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
+                                        >
+                                        @error('entrants.'.$i.'.cpsa_number')
+                                            <p class="mt-1 text-sm text-red-700">{{ $message }}</p>
+                                        @enderror
+                                    </div>
                                 </div>
                             </fieldset>
                         @endfor

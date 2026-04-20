@@ -22,7 +22,6 @@
                         <tr>
                             <th class="px-4 py-3">{{ __('Name') }}</th>
                             <th class="px-4 py-3">{{ __('CPSA') }}</th>
-                            <th class="px-4 py-3">{{ __('People') }}</th>
                             <th class="px-4 py-3">{{ __('Email') }}</th>
                             <th class="px-4 py-3">{{ __('Telephone') }}</th>
                             <th class="px-4 py-3">{{ __('Registered') }}</th>
@@ -37,7 +36,7 @@
                         <tbody class="divide-y divide-stone-100 text-stone-800">
                             @if ($competition->registration_format === \App\Models\Competition::REGISTRATION_SQUADDED)
                                 <tr class="bg-stone-100/90">
-                                    <td colspan="6" class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-forest">
+                                    <td colspan="5" class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-forest">
                                         @if ($groupSquad !== null)
                                             {{ $groupSquad->label() }}
                                             <span class="font-normal normal-case text-stone-600">
@@ -53,7 +52,6 @@
                                 <tr>
                                     <td class="px-4 py-3 font-medium">{{ $r->entrant_name }}</td>
                                     <td class="px-4 py-3 font-mono text-xs">{{ $r->cpsa_number }}</td>
-                                    <td class="px-4 py-3 tabular-nums text-stone-700">{{ (int) ($r->party_size ?? 1) }}</td>
                                     <td class="px-4 py-3"><a href="mailto:{{ $r->email }}" class="text-forest underline decoration-forest/30 underline-offset-2">{{ $r->email }}</a></td>
                                     <td class="px-4 py-3">{{ $r->telephone }}</td>
                                     <td class="whitespace-nowrap px-4 py-3 text-stone-600">{{ $r->created_at->format('Y-m-d H:i') }}</td>

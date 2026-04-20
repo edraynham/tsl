@@ -14,15 +14,7 @@ class CompetitionRegistration extends Model
         'entrant_name',
         'email',
         'telephone',
-        'party_size',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'party_size' => 'integer',
-        ];
-    }
 
     /**
      * @return BelongsTo<Competition, $this>
